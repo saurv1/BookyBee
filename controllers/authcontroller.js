@@ -72,4 +72,38 @@ const login = async(req,res)=>{
 
 }
 
-module.exports = {register,login};
+const forgotPassword = async (req, res) => {
+    const { email } = req.body;
+    console.log("Forgot password request for email:", email);
+
+    try {
+      const user = await authModel.findOne({ email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const otp = Math.floor(1000 + Math.random() * 9000).toString();
+      console.log("OTP generated:", otp);
+
+      user.otp = otp;
+      await user.save();
+
+      await sendEmail({
+        email,
+        subject: "Password Reset OTP",
+        message: `Your OTP for password reset is: ${otp}`,
+      });
+
+      return res.status(200).json({
+        message: "OTP sent to email",
+        consoleLog: `OTP for ${email} is ${otp}`,
+      });
+    }
+     catch (err) 
+     {
+      console.error("Failed to process forgot password:", err.message);
+      return res.status(500).json({ message: "Failed to send OTP" });
+     }
+   };
+
+module.exports = {register, login, forgotPassword};

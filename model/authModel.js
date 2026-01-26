@@ -24,6 +24,10 @@ const authSchema = new mongoose.Schema({
         type: String,
         enum:["customer","serviceprovider","admin"],
         default:"customer",
+    },
+    otp:{
+        type: String,
+        required: true
     }
 });
 
