@@ -1,30 +1,39 @@
-import React from 'react'
-import { useState } from "react";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    return (
-    <nav className="w-full bg-white shadow-md px-6 py-4 flex items-center justify-between">
+  return (
+    <nav className="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md z-50 px-6 py-4 flex items-center justify-between border-b border-gray-100">
       {/* Left: Logo */}
-      <div className="text-2xl font-bold  text-yellow-500">BookyBee</div>
+      <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+        <div className="w-8 h-8 bg-yellow-500 rounded-lg flex items-center justify-center">
+          <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L1 12h3v9h6v-6h4v6h6v-9h3L12 2z" />
+          </svg>
+        </div>
+        <span className="text-xl font-bold text-gray-800">BookyBee</span>
+      </Link>
 
-      {/* Middle: Links (hidden on small screens) */}
-      <div className="hidden md:flex space-x-8 text-gray-700 font-medium">
-        <a href="#home" className="hover:text-gray-900">Home</a>
-        <a href="#services" className="hover:text-gray-900">Services</a>
-        <a href="#providers" className="hover:text-gray-900">Service Providers</a>
+      {/* Middle: Links */}
+      <div className="hidden md:flex space-x-8 text-gray-600 font-medium">
+        <Link to="/" className="hover:text-yellow-600 transition-colors">Home</Link>
+        <Link to="/services" className="hover:text-yellow-600 transition-colors">Services</Link>
+        <a href="#how-it-works" className="hover:text-yellow-600 transition-colors">How It Works</a>
+        <a href="#providers" className="hover:text-yellow-600 transition-colors">Top Providers</a>
+        <a href="#contact" className="hover:text-yellow-600 transition-colors">Contact</a>
       </div>
 
       {/* Right: Auth Buttons */}
-      <div className="hidden md:flex items-center space-x-4">
-        <a href="#login" className="text-gray-700 hover:text-gray-900">Login</a>
-        <a
-          href="#register"
-          className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 transition"
+      <div className="hidden md:flex items-center space-x-6">
+        <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</Link>
+        <Link
+          to="/register"
+          className="bg-[#FFB800] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200"
         >
           Register
-        </a>
+        </Link>
       </div>
 
       {/* Mobile menu button */}
@@ -33,27 +42,11 @@ const Navbar = () => {
           onClick={() => setIsOpen(!isOpen)}
           className="text-gray-700 focus:outline-none"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             {isOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             )}
           </svg>
         </button>
@@ -61,23 +54,27 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {isOpen && (
-        <div className="absolute top-16 left-0 w-full bg-white shadow-md flex flex-col items-center md:hidden py-4 space-y-2">
-          <a href="#home" className="text-gray-700 hover:text-gray-900">Home</a>
-          <a href="#services" className="text-gray-700 hover:text-gray-900">Services</a>
-          <a href="#providers" className="text-gray-700 hover:text-gray-900">Service Providers</a>
-          <a href="#login" className="text-gray-700 hover:text-gray-900">Login</a>
-          <a
-            href="#register"
-            className="bg-yellow-400 text-white px-4 py-2 rounded hover:bg-yellow-500 transition"
-          >
-            Register
-          </a>
+        <div className="absolute top-20 left-0 w-full bg-white shadow-xl flex flex-col items-center md:hidden py-8 space-y-4 border-t border-gray-50">
+          <Link to="/" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Home</Link>
+          <Link to="/services" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Services</Link>
+          <a href="#how-it-works" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>How It Works</a>
+          <a href="#providers" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Top Providers</a>
+          <a href="#contact" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Contact</a>
+          <div className="pt-4 flex flex-col items-center space-y-4 w-full px-10">
+            <Link to="/login" className="text-gray-700 font-medium" onClick={() => setIsOpen(false)}>Login</Link>
+            <Link
+              to="/register"
+              className="bg-[#FFB800] text-white w-full text-center px-6 py-3 rounded-xl font-semibold shadow-lg shadow-yellow-200"
+              onClick={() => setIsOpen(false)}
+            >
+              Sign Up
+            </Link>
+          </div>
         </div>
       )}
     </nav>
   );
-}
+};
 
+export default Navbar;
 
-
-export default Navbar
