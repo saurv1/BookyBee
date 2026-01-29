@@ -16,8 +16,7 @@ const serviceproviderSchema = new mongoose.Schema({
     price: {
         type: Number,
         required: true
-    },
-    
+    },  
     UserId:{
         type: mongoose.Schema.Types.ObjectId,
         ref:"user",

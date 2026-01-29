@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 
 const authSchema = new mongoose.Schema({
-    username: {
+    firstName: {
         type: String,
         required: true,
-        // unique: true
+    },
+    lastName: {
+        type: String,
+        required: true,
     },
     password: {
         type: String,
@@ -15,19 +18,36 @@ const authSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    phone:{
-        type: Number,
-        required:true,
-        unique:true
+    phone: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    address: {
+        type: String,
+        required: true
     },
     role: {
         type: String,
-        enum:["customer","serviceprovider","admin"],
-        default:"customer",
+        enum: ["customer", "provider", "admin"],
+        default: "customer",
     },
-    otp:{
+    serviceCategory: {
         type: String,
-        required: true
+        required: function () { return this.role === 'provider'; }
+    },
+    price: {
+        type: Number,
+        required: function () { return this.role === 'provider'; }
+    },
+    otp: {
+        type: String,
+        required: false // making it optional as it's not always present at registration
+    },
+    isOtpVerified: {
+        type: Boolean,
+        default: false,
+        select: false
     }
 });
 

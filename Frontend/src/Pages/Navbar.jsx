@@ -20,9 +20,8 @@ const Navbar = () => {
       <div className="hidden md:flex space-x-8 text-gray-600 font-medium">
         <Link to="/" className="hover:text-yellow-600 transition-colors">Home</Link>
         <Link to="/services" className="hover:text-yellow-600 transition-colors">Services</Link>
-        <a href="#how-it-works" className="hover:text-yellow-600 transition-colors">How It Works</a>
-        <a href="#providers" className="hover:text-yellow-600 transition-colors">Top Providers</a>
-        <a href="#contact" className="hover:text-yellow-600 transition-colors">Contact</a>
+        <Link to="/how-it-works" className="hover:text-yellow-600 transition-colors">How It Works</Link>
+        <Link to="/contact" className="hover:text-yellow-600 transition-colors">Contact</Link>
       </div>
 
       {/* Right: Auth Buttons */}
@@ -57,9 +56,8 @@ const Navbar = () => {
         <div className="absolute top-20 left-0 w-full bg-white shadow-xl flex flex-col items-center md:hidden py-8 space-y-4 border-t border-gray-50">
           <Link to="/" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Home</Link>
           <Link to="/services" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Services</Link>
-          <a href="#how-it-works" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>How It Works</a>
-          <a href="#providers" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Top Providers</a>
-          <a href="#contact" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Contact</a>
+          <Link to="/how-it-works" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>How It Works</Link>
+          <Link to="/contact" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Contact</Link>
           <div className="pt-4 flex flex-col items-center space-y-4 w-full px-10">
             <Link to="/login" className="text-gray-700 font-medium" onClick={() => setIsOpen(false)}>Login</Link>
             <Link

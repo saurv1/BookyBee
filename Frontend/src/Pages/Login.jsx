@@ -1,12 +1,50 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { API } from '../http';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      console.log('Attempting login with:', { email, password });
+      const response = await API.post('/auth/login', { email, password });
+      console.log('Login response:', response.data);
+
+      if (response.status === 200) {
+        const { token, data } = response.data;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(data));
+
+        // Redirect based on role
+        if (data.role === 'admin') {
+          navigate('/admin-dashboard');
+        } else if (data.role === 'provider') {
+          navigate('/service-provider');
+        } else {
+          navigate('/customer-dashboard');
+        }
+      }
+    } catch (err) {
+      console.error('Login error detail:', err.response || err);
+      setError(err.response?.data?.message || 'Connection error. Is the backend running?');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24 pb-12 px-4">
       <div className="w-full max-w-md mx-auto">
         {/* Logo and Title */}
         <div className="text-center mb-6">
@@ -23,10 +61,16 @@ const Login = () => {
 
         {/* Login Form Card */}
         <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
-          <form className="space-y-5">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl text-center">
+              {error}
+            </div>
+          )}
+
+          <form className="space-y-5" onSubmit={handleLogin}>
             {/* Email Address */}
             <div>
-              <label className="block text-sm font-semibold text-[#1e293b] mb-2">Email Address</label>
+              <label className="block text-sm font-semibold text-[#1e293b] mb-2">Email Address / Username</label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                   <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
@@ -35,9 +79,12 @@ const Login = () => {
                   </svg>
                 </div>
                 <input
-                  type="email"
-                  placeholder="Enter your email"
+                  type="text"
+                  placeholder="Enter your email or username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
               </div>
             </div>
@@ -54,7 +101,10 @@ const Login = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
                 <button
                   type="button"
@@ -91,9 +141,10 @@ const Login = () => {
             {/* Sign In Button */}
             <button
               type="submit"
-              className="w-full bg-[#FFB800] text-white font-bold py-3.5 rounded-xl hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200 hover:shadow-xl"
+              disabled={loading}
+              className={`w-full bg-[#FFB800] text-white font-bold py-3.5 rounded-xl hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200 hover:shadow-xl ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
 
             {/* Sign Up Link */}

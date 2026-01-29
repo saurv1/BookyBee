@@ -1,10 +1,57 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { API } from '../http';
 
 const Register = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('customer');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: '',
+    address: '',
+    serviceCategory: '',
+    price: ''
+  });
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const dataToSubmit = {
+        ...formData,
+        role: activeTab
+      };
+
+      const response = await API.post('/auth/register', dataToSubmit);
+      if (response.status === 201) {
+        navigate('/login');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24 pb-12 px-4">
@@ -24,6 +71,12 @@ const Register = () => {
 
         {/* Register Form Card */}
         <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl text-center">
+              {error}
+            </div>
+          )}
+
           {/* Role Tabs */}
           <div className="flex space-x-2 mb-6 bg-gray-50 p-1 rounded-xl">
             <button
@@ -48,23 +101,31 @@ const Register = () => {
             </button>
           </div>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-semibold text-[#1e293b] mb-2">First Name</label>
                 <input
                   type="text"
+                  name="firstName"
                   placeholder="Ram"
+                  value={formData.firstName}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-[#1e293b] mb-2">Last Name</label>
                 <input
                   type="text"
+                  name="lastName"
                   placeholder="Bahadur"
+                  value={formData.lastName}
+                  onChange={handleChange}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
               </div>
             </div>
@@ -81,8 +142,12 @@ const Register = () => {
                 </div>
                 <input
                   type="email"
+                  name="email"
                   placeholder="rambahadur@gmail.com"
+                  value={formData.email}
+                  onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
               </div>
             </div>
@@ -98,8 +163,12 @@ const Register = () => {
                 </div>
                 <input
                   type="tel"
+                  name="phone"
                   placeholder="9800000000"
+                  value={formData.phone}
+                  onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
               </div>
             </div>
@@ -115,8 +184,12 @@ const Register = () => {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   placeholder="Create password"
+                  value={formData.password}
+                  onChange={handleChange}
                   className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
                 <button
                   type="button"
@@ -145,8 +218,12 @@ const Register = () => {
                 </div>
                 <input
                   type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
                   placeholder="Confirm password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
                   className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
                 <button
                   type="button"
@@ -175,39 +252,69 @@ const Register = () => {
                 </div>
                 <input
                   type="text"
+                  name="address"
                   placeholder="Enter your address"
+                  value={formData.address}
+                  onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
                 />
               </div>
             </div>
 
-            {/* Service Field - Only for Providers */}
+            {/* Provider Only Fields */}
             {activeTab === 'provider' && (
-              <div>
-                <label className="block text-sm font-semibold text-[#1e293b] mb-2">Service Category</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
-                    </svg>
+              <div className="space-y-4">
+                {/* Service Category */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#1e293b] mb-2">Service Category</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <select
+                      name="serviceCategory"
+                      value={formData.serviceCategory}
+                      onChange={handleChange}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all appearance-none bg-white cursor-pointer"
+                      required
+                    >
+                      <option value="" disabled>Select a service category</option>
+                      <option value="house-cleaning">House Cleaning</option>
+                      <option value="home-repairs">Home Repairs</option>
+                      <option value="painting">Painting</option>
+                      <option value="electrical">Electrical</option>
+                      <option value="plumbing">Plumbing</option>
+                      <option value="gardening">Gardening</option>
+                      <option value="ac-repair">AC Repair</option>
+                      <option value="moving-help">Moving Help</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                      <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   </div>
-                  <select
-                    className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all appearance-none bg-white cursor-pointer"
-                  >
-                    <option value="" disabled selected>Select a service category</option>
-                    <option value="house-cleaning">House Cleaning</option>
-                    <option value="home-repairs">Home Repairs</option>
-                    <option value="painting">Painting</option>
-                    <option value="electrical">Electrical</option>
-                    <option value="plumbing">Plumbing</option>
-                    <option value="gardening">Gardening</option>
-                    <option value="ac-repair">AC Repair</option>
-                    <option value="moving-help">Moving Help</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                    </svg>
+                </div>
+
+                {/* Price per Hour */}
+                <div>
+                  <label className="block text-sm font-semibold text-[#1e293b] mb-2">Service Price (per hour)</label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                      <span className="text-gray-400 font-bold">Rs</span>
+                    </div>
+                    <input
+                      type="number"
+                      name="price"
+                      placeholder="500"
+                      value={formData.price}
+                      onChange={handleChange}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                      required={activeTab === 'provider'}
+                    />
                   </div>
                 </div>
               </div>
@@ -216,9 +323,10 @@ const Register = () => {
             {/* Create Account Button */}
             <button
               type="submit"
-              className="w-full bg-[#FFB800] text-white font-bold py-3.5 rounded-xl hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200 hover:shadow-xl"
+              disabled={loading}
+              className={`w-full bg-[#FFB800] text-white font-bold py-3.5 rounded-xl hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200 hover:shadow-xl ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
 
             {/* Sign In Link */}

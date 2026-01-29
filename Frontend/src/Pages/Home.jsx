@@ -1,7 +1,8 @@
-import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import heroImage from '../assets/illustrations.png';
 
 const Home = () => {
+  const navigate = useNavigate();
   const services = [
     {
       name: 'House Cleaning', desc: 'Professional cleaning services', price: 'From ₹ 350/hr', color: 'bg-blue-50', iconColor: 'text-blue-500', iconBg: 'bg-blue-100',
@@ -38,13 +39,13 @@ const Home = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white pt-20">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
       <section className="relative px-6 py-16 md:py-24 max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-12">
         <div className="flex-1 space-y-8">
           <div className="inline-flex items-center space-x-2 bg-green-50 px-4 py-1.5 rounded-full border border-green-100">
             <span className="flex h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
-            <span className="text-sm font-semibold text-green-700">Trusted by 50,000+ customers</span>
+            <span className="text-sm font-semibold text-green-700">Trusted by customers</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight">
@@ -93,7 +94,6 @@ const Home = () => {
           <div className="absolute -top-10 -right-4 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center space-x-3 border border-gray-50 animate-bounce-slow">
             <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center text-xl">👥</div>
             <div>
-              <p className="font-bold text-gray-900 text-sm">5,000+</p>
               <p className="text-[10px] text-gray-500">Active Providers</p>
             </div>
           </div>
@@ -101,8 +101,7 @@ const Home = () => {
           <div className="absolute -bottom-6 -left-8 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center space-x-3 border border-gray-50">
             <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center text-xl text-green-600">✓</div>
             <div>
-              <p className="font-bold text-gray-900 text-sm">2,500+</p>
-              <p className="text-[10px] text-gray-500">Bookings Today</p>
+              <p className="text-[10px] text-gray-500">Book Today</p>
             </div>
           </div>
 
@@ -116,7 +115,7 @@ const Home = () => {
       </section>
 
       {/* Popular Services Section */}
-      <section className="bg-gray-50 py-24 px-6" id="services">
+      <section className="bg-gray-50 py-24 pt-10" id="services">
         <div className="max-w-7xl mx-auto text-center space-y-4 mb-16">
           <h2 className="text-4xl font-extrabold text-[#111827]">Popular Services</h2>
           <p className="text-gray-500 max-w-xl mx-auto">Everything you need for your home, all in one place</p>
@@ -138,7 +137,10 @@ const Home = () => {
         </div>
 
         <div className="mt-16 text-center">
-          <button className="px-10 py-4 rounded-xl border-2 border-yellow-400 text-yellow-600 font-bold hover:bg-yellow-400 hover:text-white transition-all">
+          <button
+            onClick={() => navigate('/services')}
+            className="inline-block px-10 py-4 rounded-xl border-2 border-yellow-400 text-yellow-600 font-bold hover:bg-yellow-400 hover:text-white transition-all"
+          >
             View All Services
           </button>
         </div>
