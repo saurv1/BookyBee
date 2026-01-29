@@ -124,7 +124,7 @@ const Home = () => {
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, idx) => (
-            <div key={idx} className={`${service.color} p-8 rounded-[32px] group hover:shadow-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-white/50 relative overflow-hidden`}>
+            <div key={idx} className={`${service.color} p-8 rounded-4xl group hover:shadow-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-white/50 relative overflow-hidden`}>
               <div className={`w-14 h-14 ${service.iconBg} rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform ${service.iconColor}`}>
                 {service.icon}
               </div>
@@ -147,7 +147,7 @@ const Home = () => {
       {/* How It Works Section */}
       <section className="py-24 px-6 bg-white relative overflow-hidden" id="how-it-works">
         {/* Background Decorative Element */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-yellow-50/50 rounded-full blur-3xl -z-10"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-200 h-200 bg-yellow-50/50 rounded-full blur-3xl -z-10"></div>
 
         <div className="text-center space-y-4 mb-20">
           <h2 className="text-4xl font-extrabold text-[#111827]">How BookyBee Works</h2>
@@ -156,11 +156,11 @@ const Home = () => {
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 relative">
           {/* Connector Line (hidden on mobile) */}
-          <div className="hidden md:block absolute top-[100px] left-[15%] right-[15%] h-0.5 border-t-2 border-dashed border-yellow-200 -z-0"></div>
+          <div className="hidden md:block absolute top-25 left-[15%] right-[15%] h-0.5 border-t-2 border-dashed border-yellow-200 z-0"></div>
 
           {/* Step 1 */}
           <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 z-10 group">
-            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-[24px] flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:rotate-6 transition-transform">1</div>
+            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:rotate-6 transition-transform">1</div>
             <h3 className="text-2xl font-bold text-gray-900">Search & Select</h3>
             <p className="text-gray-500 leading-relaxed text-sm">Browse services, filter by price, rating and location. View detailed profiles of top-rated providers.</p>
             <div className="flex space-x-2 mt-4">
@@ -172,7 +172,7 @@ const Home = () => {
 
           {/* Step 2 */}
           <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 z-10 group">
-            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-[24px] flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:-rotate-6 transition-transform">2</div>
+            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:-rotate-6 transition-transform">2</div>
             <h3 className="text-2xl font-bold text-gray-900">Chat & Book</h3>
             <p className="text-gray-500 leading-relaxed text-sm">Message providers directly, get instant quotes and book your preferred time slot with confirmation.</p>
             <div className="flex space-x-2 mt-4">
@@ -184,7 +184,7 @@ const Home = () => {
 
           {/* Step 3 */}
           <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 z-10 group">
-            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-[24px] flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:rotate-6 transition-transform">3</div>
+            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:rotate-6 transition-transform">3</div>
             <h3 className="text-2xl font-bold text-gray-900">Pay & Rate</h3>
             <p className="text-gray-500 leading-relaxed text-sm">Secure payment options, rate your experience and help others find the best service providers.</p>
             <div className="flex space-x-2 mt-4">

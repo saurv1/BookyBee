@@ -6,7 +6,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-24 pb-12 px-4">
+    <div className="min-h-screen bg-linear-to-br from-gray-50 to-gray-100 pt-24 pb-12 px-4">
       <div className="w-full max-w-md mx-auto">
         {/* Logo and Title */}
         <div className="text-center mb-6">
