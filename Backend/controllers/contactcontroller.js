@@ -27,7 +27,7 @@ const submitContactForm = async (req, res) => {
         `;
 
         await sendEmail({
-            email: "basnetsourav001@gmail.com", // Recipient email
+            email: "bookybee.service@gmail.com", // Recipient email
             subject: `Contact Form Submission from ${name}`,
             message: emailContent,
         });

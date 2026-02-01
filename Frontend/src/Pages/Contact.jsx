@@ -60,7 +60,7 @@ const Contact = () => {
                             <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-2xl">📧</div>
                             <div>
                                 <h4 className="font-bold text-gray-900">Email</h4>
-                                <p className="text-sm text-gray-500">info@bookybee.com</p>
+                                <p className="text-sm text-gray-500">bookybee.service@gmail.com</p>
                             </div>
                         </div>
                         <div className="flex items-start space-x-4">

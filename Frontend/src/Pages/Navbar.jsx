@@ -1,8 +1,42 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogged, setIsLogged] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLogged(!!token);
+  }, [location]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLogged(false);
+    navigate('/login');
+    setIsOpen(false);
+  };
+
+  const handleDashboardClick = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    } else {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user?.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else if (user?.role === 'provider') {
+        navigate('/service-provider');
+      } else {
+        navigate('/customer-dashboard');
+      }
+    }
+    setIsOpen(false);
+  };
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md z-50 px-6 py-4 flex items-center justify-between border-b border-gray-100">
@@ -22,17 +56,29 @@ const Navbar = () => {
         <Link to="/services" className="hover:text-yellow-600 transition-colors">Services</Link>
         <Link to="/how-it-works" className="hover:text-yellow-600 transition-colors">How It Works</Link>
         <Link to="/contact" className="hover:text-yellow-600 transition-colors">Contact</Link>
+        <button onClick={handleDashboardClick} className="hover:text-yellow-600 transition-colors">Dashboard</button>
       </div>
 
       {/* Right: Auth Buttons */}
       <div className="hidden md:flex items-center space-x-6">
-        <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</Link>
-        <Link
-          to="/register"
-          className="bg-[#FFB800] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200"
-        >
-          Register
-        </Link>
+        {isLogged ? (
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-red-600 transition-all shadow-lg shadow-red-100"
+          >
+            Logout
+          </button>
+        ) : (
+          <>
+            <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</Link>
+            <Link
+              to="/register"
+              className="bg-[#FFB800] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-200"
+            >
+              Register
+            </Link>
+          </>
+        )}
       </div>
 
       {/* Mobile menu button */}
@@ -58,15 +104,27 @@ const Navbar = () => {
           <Link to="/services" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Services</Link>
           <Link to="/how-it-works" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>How It Works</Link>
           <Link to="/contact" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Contact</Link>
+          <button onClick={handleDashboardClick} className="text-gray-700 hover:text-yellow-600 font-medium">Dashboard</button>
           <div className="pt-4 flex flex-col items-center space-y-4 w-full px-10">
-            <Link to="/login" className="text-gray-700 font-medium" onClick={() => setIsOpen(false)}>Login</Link>
-            <Link
-              to="/register"
-              className="bg-[#FFB800] text-white w-full text-center px-6 py-3 rounded-xl font-semibold shadow-lg shadow-yellow-200"
-              onClick={() => setIsOpen(false)}
-            >
-              Sign Up
-            </Link>
+            {isLogged ? (
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white w-full text-center px-6 py-3 rounded-xl font-semibold shadow-lg shadow-red-100"
+              >
+                Logout
+              </button>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 font-medium" onClick={() => setIsOpen(false)}>Login</Link>
+                <Link
+                  to="/register"
+                  className="bg-[#FFB800] text-white w-full text-center px-6 py-3 rounded-xl font-semibold shadow-lg shadow-yellow-200"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
@@ -75,4 +133,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
-

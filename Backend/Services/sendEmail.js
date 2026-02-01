@@ -2,9 +2,9 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async(options) => {
 
-    const user = process.env.SMTP_USER || "basnetsourav001@gmail.com";
-    const pass = process.env.SMTP_PASS || "skjcxadlfbrjbhkz";
-    const from = process.env.SMTP_FROM || "Jobportal";
+    const user = process.env.SMTP_USER || "bookybee.service@gmail.com";
+    const pass = process.env.SMTP_PASS || "dkpniuhqfrecchal";
+    const from = process.env.SMTP_FROM || "BookyBee";
     // Create a transporter
     var transporter = nodemailer.createTransport({
         service: 'Gmail',
