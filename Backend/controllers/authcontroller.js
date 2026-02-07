@@ -64,17 +64,20 @@ const login = async (req, res) => {
 
         // Hardcoded Admin Login (Case-insensitive for the username 'admin')
         if (email?.toLowerCase() === "admin" && password === "admin@123") {
-            const adminToken = jwt.sign({ id: "admin_id", email: "admin@bookybee.com", role: "admin" }, "helloworld", { expiresIn: "24h" });
-            return res.status(200).json({
-                message: "Admin Login successful",
-                data: {
-                    firstName: "BookyBee",
-                    lastName: "Admin",
-                    email: "admin@bookybee.com",
-                    role: "admin"
-                },
-                token: adminToken
-            });
+            const adminUser = await authModel.findOne({ email: "admin@bookybee.com" });
+            if (adminUser) {
+                const adminToken = jwt.sign({ id: adminUser._id, email: adminUser.email, role: "admin" }, "helloworld", { expiresIn: "24h" });
+                return res.status(200).json({
+                    message: "Admin Login successful",
+                    data: {
+                        firstName: adminUser.firstName,
+                        lastName: adminUser.lastName,
+                        email: adminUser.email,
+                        role: "admin"
+                    },
+                    token: adminToken
+                });
+            }
         }
 
         const user = await authModel.findOne({ email });

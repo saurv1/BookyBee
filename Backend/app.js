@@ -7,6 +7,7 @@ const dbConnect = require('./db/dbconfig');
 const authRoute = require('./routes/authRoute');
 const serviceRoute = require("./routes/serviceRoute");
 const contactRoute = require("./routes/contactRoute");
+const bookingRoute = require("./routes/bookingRoute");
 
 const cors = require('cors');
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/api/auth", authRoute)
 app.use("/api/service", serviceRoute)
 app.use("/api/contact", contactRoute);
+app.use("/api/booking", bookingRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

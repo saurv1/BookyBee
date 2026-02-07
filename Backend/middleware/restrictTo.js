@@ -1,18 +1,16 @@
-const restrictTo = (...roles)=>{
-  return (req, res, next)=>{
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
     //  console.log(roles)
 
-    const userRole= req.user.role
+    const userRole = req.user.role
 
-    if(!roles.includes(userRole)){
-        res.status(403).json({
-            message:"you have not access to create uset this resource"
-        })
+    if (!roles.includes(userRole)) {
+      return res.status(403).json({
+        message: "You do not have access to this resource"
+      });
     }
-    else(
-        next()
-    )
+    next();
   }
 }
 
-module.exports= restrictTo
+module.exports = restrictTo
