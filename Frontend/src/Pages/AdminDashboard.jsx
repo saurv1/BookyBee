@@ -119,7 +119,7 @@ const AdminDashboard = () => {
                 <MoreHorizontal className="w-5 h-5" />
               </button>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-75 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -159,7 +159,7 @@ const AdminDashboard = () => {
                 <MoreHorizontal className="w-5 h-5" />
               </button>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-75 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie

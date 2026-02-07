@@ -120,7 +120,7 @@ const ProviderDashboard = () => {
                 <option>Last Year</option>
               </select>
             </div>
-            <div className="h-[300px] w-full">
+            <div className="h-75 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={earningsData}>
                   <defs>
@@ -152,7 +152,7 @@ const ProviderDashboard = () => {
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col">
             <h3 className="font-bold text-gray-800 mb-2">Service Distribution</h3>
             <p className="text-xs text-gray-400 mb-6">Breakdown by service type</p>
-            <div className="flex-1 h-[250px] w-full">
+            <div className="flex-1 h-62.5 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
