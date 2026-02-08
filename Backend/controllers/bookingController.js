@@ -109,16 +109,18 @@ const getAdminStats = async (req, res) => {
             bookings: monthlyBookings[index]
         })).slice(-6); // Last 6 months
 
-        // Service Distribution
+        // Service Distribution (based on platform capacity/providers)
         const serviceCounts = {};
-        allBookings.forEach(booking => {
-            serviceCounts[booking.service] = (serviceCounts[booking.service] || 0) + 1;
+        allUsers.forEach(user => {
+            const category = user.serviceCategory || 'Other';
+            serviceCounts[category] = (serviceCounts[category] || 0) + 1;
         });
 
-        const pieData = Object.keys(serviceCounts).map(service => ({
+        const COLORS = ['#FFB800', '#6366F1', '#10B981', '#F43F5E', '#8B5CF6', '#06B6D4'];
+        const pieData = Object.keys(serviceCounts).map((service, index) => ({
             name: service,
             value: serviceCounts[service],
-            color: `#${Math.floor(Math.random() * 16777215).toString(16)}` // Random colors for now
+            color: COLORS[index % COLORS.length]
         }));
 
         // Top Service Providers (based on job count)
@@ -131,21 +133,30 @@ const getAdminStats = async (req, res) => {
         });
 
         const sortedProviderIds = Object.keys(providerStats).sort((a, b) => providerStats[b] - providerStats[a]).slice(0, 3);
-        const topProviders = await Promise.all(sortedProviderIds.map(async (id) => {
+        const topProvidersData = await Promise.all(sortedProviderIds.map(async (id) => {
             const provider = await authModel.findById(id);
+            if (!provider) return null;
+
+            const pBookings = await bookingModel.find({ provider: id });
+            const ratedBookings = pBookings.filter(b => b.rating !== undefined && b.rating !== null);
+            const avgRating = ratedBookings.length > 0
+                ? (ratedBookings.reduce((sum, b) => sum + b.rating, 0) / ratedBookings.length).toFixed(1)
+                : 0;
+
             return {
                 id: provider._id,
                 name: `${provider.firstName} ${provider.lastName}`,
                 service: provider.serviceCategory || 'Service',
-                rating: 5.0, // Placeholder as rating system is not yet implemented
+                rating: parseFloat(avgRating),
                 jobs: providerStats[id]
             };
         }));
+        const topProviders = topProvidersData.filter(p => p !== null);
 
         // Recent Bookings
         const recentBookings = allBookings.slice(0, 5).map(b => ({
             id: b._id,
-            customer: `${b.customer?.firstName} ${b.customer?.lastName}`,
+            customer: b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : "Deleted User",
             service: b.service,
             status: b.status,
             statusColor: b.status === 'Completed' ? 'bg-green-100 text-green-700' :
@@ -224,18 +235,61 @@ const getProviderStats = async (req, res) => {
                         'bg-blue-100 text-blue-700'
         }));
 
+        // Calculate average rating
+        const ratedBookings = bookings.filter(b => b.rating !== undefined && b.rating !== null);
+        const averageRating = ratedBookings.length > 0
+            ? (ratedBookings.reduce((sum, b) => sum + b.rating, 0) / ratedBookings.length).toFixed(1)
+            : 0;
+
+        // Get reviews (rated bookings)
+        const reviews = bookings.filter(b => b.rating !== undefined && b.rating !== null)
+            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+            .slice(0, 5)
+            .map(b => ({
+                id: b._id,
+                name: `${b.customer?.firstName} ${b.customer?.lastName}`,
+                rating: b.rating,
+                comment: 'No comment provided',
+                date: new Date(b.updatedAt).toLocaleDateString()
+            }));
+
         res.status(200).json({
             success: true,
             stats: {
                 totalBookings,
                 pendingRequests,
                 totalEarnings,
-                averageRating: 5.0 // Placeholder
+                averageRating: parseFloat(averageRating)
             },
             earningsData,
             pieData: pieData.length > 0 ? pieData : [{ name: 'No Data', value: 1, color: '#CBD5E1' }],
-            recentBookings
+            recentBookings,
+            reviews
         });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const rateBooking = async (req, res) => {
+    try {
+        const { bookingId, rating } = req.body;
+        const customerId = req.user._id;
+
+        const booking = await bookingModel.findOne({ _id: bookingId, customer: customerId });
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking not found or you are not authorized' });
+        }
+
+        if (booking.status !== 'Completed') {
+            return res.status(400).json({ success: false, message: 'You can only rate completed bookings' });
+        }
+
+        booking.rating = rating;
+        await booking.save();
+
+        res.status(200).json({ success: true, message: 'Rating submitted successfully', booking });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -246,5 +300,6 @@ module.exports = {
     getCustomerBookings,
     getCustomerStats,
     getAdminStats,
-    getProviderStats
+    getProviderStats,
+    rateBooking
 };

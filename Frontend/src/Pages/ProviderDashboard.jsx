@@ -36,6 +36,7 @@ const ProviderDashboard = () => {
   const [earningsData, setEarningsData] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
+  const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
@@ -54,6 +55,7 @@ const ProviderDashboard = () => {
         setEarningsData(res.data.earningsData);
         setPieData(res.data.pieData);
         setRecentBookings(res.data.recentBookings);
+        setReviews(res.data.reviews || []);
       }
     } catch (error) {
       console.error("Error fetching provider statistics:", error);
@@ -67,11 +69,6 @@ const ProviderDashboard = () => {
     { title: 'Pending Requests', value: providerStats.pendingRequests.toString(), change: `${providerStats.pendingRequests} pending`, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
     { title: 'Total Earnings', value: `Rs ${providerStats.totalEarnings.toLocaleString()}`, change: '+18%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
     { title: 'Average Rating', value: providerStats.averageRating.toFixed(1), change: `${providerStats.averageRating}/5`, icon: Star, color: 'text-purple-600', bg: 'bg-purple-50' },
-  ];
-
-  const recentReviews = [
-    { id: 1, name: 'Lisa Anderson', rating: 5, comment: 'Excellent service! Very professional and thorough.', date: '2 days ago' },
-    { id: 2, name: 'Robert Taylor', rating: 4, comment: 'Great work! Arrived on time and finished quickly.', date: '1 week ago' },
   ];
 
   return (
@@ -212,25 +209,31 @@ const ProviderDashboard = () => {
               <button className="text-[#FFB800] text-sm font-semibold hover:underline">View All</button>
             </div>
             <div className="space-y-6">
-              {recentReviews.map((review) => (
-                <div key={review.id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 text-xs font-bold">
-                        {review.name.charAt(0)}
+              {reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <div key={review.id} className="border-b border-gray-50 last:border-0 pb-4 last:pb-0">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 text-xs font-bold">
+                          {review.name.charAt(0)}
+                        </div>
+                        <span className="text-sm font-bold text-gray-800">{review.name}</span>
                       </div>
-                      <span className="text-sm font-bold text-gray-800">{review.name}</span>
+                      <div className="flex items-center space-x-0.5">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />
+                        ))}
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} />
-                      ))}
-                    </div>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-1">{review.comment}</p>
+                    <span className="text-xs text-gray-400">{review.date}</span>
                   </div>
-                  <p className="text-sm text-gray-600 leading-relaxed mb-1">{review.comment}</p>
-                  <span className="text-xs text-gray-400">{review.date}</span>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No reviews yet</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

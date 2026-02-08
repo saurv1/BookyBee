@@ -49,7 +49,11 @@ const Services = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {allServices.map((service, idx) => (
-            <div key={idx} className={`${service.color} p-10 rounded-[40px] border border-transparent hover:border-white hover:shadow-2xl transition-all duration-300 group relative overflow-hidden`}>
+            <Link
+              key={idx}
+              to={localStorage.getItem('token') ? `/service-category/${service.name}` : "/register"}
+              className={`${service.color} p-10 rounded-[40px] border border-transparent hover:border-white hover:shadow-2xl transition-all duration-300 group relative overflow-hidden`}
+            >
               <div className={`w-16 h-16 ${service.iconBg} ${service.iconColor} rounded-2xl flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform`}>
                 {service.icon}
               </div>
@@ -59,11 +63,11 @@ const Services = () => {
               </p>
               <div className="flex items-center justify-between">
                 <span className={`font-bold ${service.iconColor}`}>{service.price}</span>
-                <Link to="/register" className="bg-white/80 backdrop-blur-sm p-3 rounded-xl shadow-sm text-gray-700 hover:text-[#FFB800] transition-colors">
+                <div className="bg-white/80 backdrop-blur-sm p-3 rounded-xl shadow-sm text-gray-700 group-hover:text-[#FFB800] transition-colors">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>
-                </Link>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -78,7 +82,7 @@ const Services = () => {
           </Link>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

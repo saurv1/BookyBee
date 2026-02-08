@@ -7,7 +7,8 @@ import {
   DollarSign,
   TrendingUp,
   MoreHorizontal,
-  Star
+  Star,
+  Trash2
 } from 'lucide-react';
 import {
   LineChart,
@@ -228,7 +229,7 @@ const AdminDashboard = () => {
                 <div key={provider.id} className="flex items-center justify-between group cursor-pointer">
                   <div className="flex items-center space-x-4">
                     <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center text-gray-600 font-bold overflow-hidden border border-gray-100">
-                      {provider.name.charAt(0)}
+                      {provider.name?.charAt(0) || 'P'}
                     </div>
                     <div>
                       <h4 className="font-semibold text-gray-800 group-hover:text-[#FFB800] transition-colors">{provider.name}</h4>
@@ -247,6 +248,7 @@ const AdminDashboard = () => {
             </div>
           </div>
         </div>
+
       </div>
     </DashboardLayout>
   );

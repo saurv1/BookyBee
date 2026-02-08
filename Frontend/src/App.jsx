@@ -14,6 +14,9 @@ import HowItWorks from './Pages/HowItWorks';
 import Contact from './Pages/Contact';
 import BookingHistory from './Pages/BookingHistory';
 import BookingConfirmation from './Pages/BookingConfirmation';
+import CategoryProviders from './Pages/CategoryProviders';
+import AdminUsers from './Pages/Admin/AdminUsers';
+import AdminProviders from './Pages/Admin/AdminProviders';
 
 const AppContent = () => {
   const location = useLocation();
@@ -36,7 +39,10 @@ const AppContent = () => {
         <Route path="/customer-dashboard" element={<CustomerDashboard />} />
         <Route path="/service-provider" element={<ProviderDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
+        <Route path="/admin/providers" element={<AdminProviders />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/service-category/:categoryName" element={<CategoryProviders />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking-confirmation" element={<BookingConfirmation />} />

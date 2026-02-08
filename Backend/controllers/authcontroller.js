@@ -214,4 +214,39 @@ const resetPassword = async (req, res) => {
     })
 }
 
-module.exports = { register, login, forgotPassword, verifyOtp, resetPassword };
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await authModel.find().select("-password");
+        res.status(200).json({
+            success: true,
+            data: users
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const deleteUser = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await authModel.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.role === 'admin') {
+            return res.status(403).json({ message: "Admin users cannot be deleted" });
+        }
+
+        await authModel.findByIdAndDelete(id);
+        res.status(200).json({
+            success: true,
+            message: "User deleted successfully"
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+module.exports = { register, login, forgotPassword, verifyOtp, resetPassword, getAllUsers, deleteUser };

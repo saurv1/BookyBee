@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
 import {
   Calendar,
@@ -28,6 +29,7 @@ import {
 import { API, APIAuthenticated } from '../http';
 
 const CustomerDashboard = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [dashboardStats, setDashboardStats] = useState({
@@ -71,10 +73,10 @@ const CustomerDashboard = () => {
   };
 
   const stats = [
-    { title: 'Total Bookings', value: dashboardStats.totalBookings.toString(), change: '+12%', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { title: 'Pending Services', value: dashboardStats.pendingServices.toString(), change: 'Active', icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
-    { title: 'Completed', value: dashboardStats.completed.toString(), change: '+8%', icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
-    { title: 'Total Spent', value: `Rs ${dashboardStats.totalSpent}`, change: 'This month', icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { title: 'Total Bookings', value: dashboardStats.totalBookings.toString(), icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { title: 'Pending Services', value: dashboardStats.pendingServices.toString(), icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { title: 'Completed', value: dashboardStats.completed.toString(), icon: CheckCircle, color: 'text-green-600', bg: 'bg-green-50' },
+    { title: 'Total Spent', value: `Rs ${dashboardStats.totalSpent}`, icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
   const favorites = [
@@ -99,9 +101,6 @@ const CustomerDashboard = () => {
                 <div className={`${stat.bg} p-2.5 rounded-xl`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
                 </div>
-                <div className={`text-xs font-bold px-2 py-1 rounded-full ${stat.change === 'Active' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-                  {stat.change}
-                </div>
               </div>
               <p className="text-slate-500 text-sm font-medium">{stat.title}</p>
               <h3 className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</h3>
@@ -112,14 +111,14 @@ const CustomerDashboard = () => {
         {/* Dynamic Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upcoming Bookings */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between px-2">
-              <h3 className="font-bold text-slate-800 text-lg">Upcoming Bookings</h3>
-              <button className="text-yellow-500 text-sm font-bold hover:underline">View All</button>
-            </div>
-            <div className="space-y-4">
-              {upcomingBookings.length > 0 ? (
-                upcomingBookings.map((booking) => (
+          {upcomingBookings.length > 0 && (
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between px-2">
+                <h3 className="font-bold text-slate-800 text-lg">Upcoming Bookings</h3>
+                <button className="text-yellow-500 text-sm font-bold hover:underline">View All</button>
+              </div>
+              <div className="space-y-4">
+                {upcomingBookings.map((booking) => (
                   <div key={booking._id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm group hover:border-yellow-200 transition-all">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-4">
@@ -151,20 +150,18 @@ const CustomerDashboard = () => {
                       </div>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="bg-white p-8 rounded-2xl border border-dashed border-slate-200 text-center">
-                  <p className="text-slate-400">No upcoming bookings found.</p>
-                  <button className="text-yellow-500 font-bold mt-2 hover:underline">Book your first service</button>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Quick Actions & Promo */}
-          <div className="space-y-6">
+          {/* Quick Actions */}
+          <div className={`space-y-6 ${upcomingBookings.length === 0 ? 'lg:col-span-3' : ''}`}>
             <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm space-y-4">
-              <button className="w-full bg-[#FFB800] text-white p-4 rounded-xl font-bold flex items-center justify-between group hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100">
+              <button
+                onClick={() => navigate('/services')}
+                className="w-full bg-[#FFB800] text-white p-4 rounded-xl font-bold flex items-center justify-between group hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100"
+              >
                 <div className="flex items-center space-x-3">
                   <div className="bg-white/20 p-1 rounded-lg">
                     <Zap className="w-4 h-4" />
@@ -179,7 +176,11 @@ const CustomerDashboard = () => {
                 { title: 'Rate Services', icon: Star, path: '/customer/reviews' },
                 { title: 'Get Support', icon: Headphones, path: '/contact' }
               ].map((action) => (
-                <button key={action.title} className="w-full bg-slate-50 text-slate-700 p-4 rounded-xl font-bold flex items-center justify-between group hover:bg-slate-100 transition-all">
+                <button
+                  key={action.title}
+                  onClick={() => navigate(action.path)}
+                  className="w-full bg-slate-50 text-slate-700 p-4 rounded-xl font-bold flex items-center justify-between group hover:bg-slate-100 transition-all"
+                >
                   <div className="flex items-center space-x-3">
                     <action.icon className="w-5 h-5 text-slate-400 group-hover:text-slate-600" />
                     <span>{action.title}</span>
@@ -187,26 +188,6 @@ const CustomerDashboard = () => {
                   <ChevronRight className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                 </button>
               ))}
-            </div>
-
-            {/* Promo Card */}
-            <div className="bg-indigo-900 rounded-2xl p-6 text-white relative overflow-hidden group shadow-xl">
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-xl font-bold">Get 20% OFF</h4>
-                  <Gift className="w-6 h-6 text-yellow-400" />
-                </div>
-                <p className="text-indigo-200 text-sm mb-6 leading-relaxed">
-                  On your next booking! Use code:<br />
-                  <span className="text-white font-mono font-bold tracking-wider">CLEAN20</span>
-                </p>
-                <button className="w-full bg-yellow-400 text-indigo-900 py-3 rounded-xl font-bold hover:bg-yellow-300 transition-colors">
-                  Claim Offer
-                </button>
-              </div>
-              {/* Decorative circles */}
-              <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-indigo-800 rounded-full group-hover:scale-150 transition-transform duration-500" />
-              <div className="absolute -top-10 -left-10 w-32 h-32 bg-indigo-800/50 rounded-full" />
             </div>
           </div>
         </div>
