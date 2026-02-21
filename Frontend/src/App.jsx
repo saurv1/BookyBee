@@ -17,6 +17,12 @@ import BookingConfirmation from './Pages/BookingConfirmation';
 import CategoryProviders from './Pages/CategoryProviders';
 import AdminUsers from './Pages/Admin/AdminUsers';
 import AdminProviders from './Pages/Admin/AdminProviders';
+import Profile from './Pages/Profile';
+import ProviderDetails from './Pages/ProviderDetails';
+
+import Chat from './Pages/Chat';
+import ChatList from './Pages/ChatList';
+import ProviderBookings from './Pages/ProviderBookings';
 
 const AppContent = () => {
   const location = useLocation();
@@ -24,7 +30,9 @@ const AppContent = () => {
     location.pathname.includes('service-provider') ||
     location.pathname.startsWith('/admin') ||
     location.pathname.startsWith('/provider') ||
-    location.pathname.startsWith('/customer');
+    location.pathname.startsWith('/customer') ||
+    location.pathname.startsWith('/chat/') ||
+    location.pathname === '/profile';
 
   return (
     <>
@@ -46,7 +54,13 @@ const AppContent = () => {
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking-confirmation" element={<BookingConfirmation />} />
-        <Route path="/booking-history" element={<BookingHistory />} />
+        <Route path="/customer/bookings" element={<BookingHistory />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/provider-details/:providerId" element={<ProviderDetails />} />
+        <Route path="/chat/:receiverId" element={<Chat />} />
+        <Route path="/customer/messages" element={<ChatList role="customer" />} />
+        <Route path="/provider/messages" element={<ChatList role="provider" />} />
+        <Route path="/provider/bookings" element={<ProviderBookings />} />
       </Routes>
     </>
   );

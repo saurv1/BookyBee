@@ -66,7 +66,7 @@ const login = async (req, res) => {
         if (email?.toLowerCase() === "admin" && password === "admin@123") {
             const adminUser = await authModel.findOne({ email: "admin@bookybee.com" });
             if (adminUser) {
-                const adminToken = jwt.sign({ id: adminUser._id, email: adminUser.email, role: "admin" }, "helloworld", { expiresIn: "24h" });
+                const adminToken = jwt.sign({ id: adminUser._id, email: adminUser.email, role: "admin" }, "helloworld", { expiresIn: "1h" });
                 return res.status(200).json({
                     message: "Admin Login successful",
                     data: {
@@ -249,4 +249,121 @@ const deleteUser = async (req, res) => {
     }
 }
 
-module.exports = { register, login, forgotPassword, verifyOtp, resetPassword, getAllUsers, deleteUser };
+const toggleAvailability = async (req, res) => {
+    try {
+        const { id } = req.params;
+        console.log("Toggling availability for user:", id);
+
+        // We can get the user directly from req.user if it's the same ID
+        // or fetch it from DB to be sure we have the latest state
+        const user = await authModel.findById(id);
+
+        if (!user) {
+            console.log("User not found in toggleAvailability");
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        if (user.role !== 'provider') {
+            return res.status(403).json({ message: "Only providers can toggle availability" });
+        }
+
+        user.isAvailable = !user.isAvailable;
+        await user.save();
+
+        console.log("New availability state:", user.isAvailable);
+
+        res.status(200).json({
+            success: true,
+            message: `Provider is now ${user.isAvailable ? 'available' : 'unavailable'}`,
+            isAvailable: user.isAvailable
+        });
+    } catch (err) {
+        console.error("Error in toggleAvailability:", err);
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const updateProfile = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { firstName, lastName, phone, address, serviceCategory, price } = req.body;
+
+        if (req.user._id.toString() !== id) {
+            return res.status(403).json({ message: "You can only update your own profile" });
+        }
+
+        const user = await authModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        user.firstName = firstName || user.firstName;
+        user.lastName = lastName || user.lastName;
+        user.phone = phone || user.phone;
+        user.address = address || user.address;
+
+        if (user.role === 'provider') {
+            user.serviceCategory = serviceCategory || user.serviceCategory;
+            user.price = price || user.price;
+        }
+
+        await user.save();
+
+        const userData = user.toObject();
+        delete userData.password;
+
+        res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            data: userData
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const changePassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { currentPassword, newPassword } = req.body;
+
+        if (req.user._id.toString() !== id) {
+            return res.status(403).json({ message: "You can only change your own password" });
+        }
+
+        const user = await authModel.findById(id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const isPasswordValid = bcrypt.compareSync(currentPassword, user.password);
+        if (!isPasswordValid) {
+            return res.status(401).json({ message: "Invalid current password" });
+        }
+
+        user.password = bcrypt.hashSync(newPassword, 10);
+        await user.save();
+
+        res.status(200).json({
+            success: true,
+            message: "Password changed successfully"
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+const getUserDetails = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await authModel.findById(id).select("-password");
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+        res.status(200).json({ success: true, user });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+}
+
+module.exports = { register, login, forgotPassword, verifyOtp, resetPassword, getAllUsers, deleteUser, toggleAvailability, updateProfile, changePassword, getUserDetails };

@@ -48,6 +48,10 @@ const authSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
         select: false
+    },
+    isAvailable: {
+        type: Boolean,
+        default: true
     }
 });
 

@@ -1,4 +1,4 @@
-const { register, login, forgotPassword, verifyOtp, resetPassword, getAllUsers, deleteUser } = require("../controllers/authcontroller");
+const { register, login, forgotPassword, verifyOtp, resetPassword, getAllUsers, deleteUser, toggleAvailability, updateProfile, changePassword, getUserDetails } = require("../controllers/authcontroller");
 const isAutenticated = require("../middleware/isAutenticated");
 const restrictTo = require("../middleware/restrictTo");
 
@@ -11,4 +11,9 @@ Router.post("/verify-otp", verifyOtp);
 Router.put("/reset-password", resetPassword);
 Router.get("/users", isAutenticated, restrictTo("admin"), getAllUsers);
 Router.delete("/delete/:id", isAutenticated, restrictTo("admin"), deleteUser);
+Router.put("/availability/:id", isAutenticated, toggleAvailability);
+Router.put("/update-profile/:id", isAutenticated, updateProfile);
+Router.put("/change-password/:id", isAutenticated, changePassword);
+Router.get("/user/:id", isAutenticated, getUserDetails);
+
 module.exports = Router;

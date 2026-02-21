@@ -61,14 +61,19 @@ const CategoryProviders = () => {
                                 <div className="flex items-start justify-between mb-6">
                                     <div className="flex items-center space-x-4">
                                         <div className="w-16 h-16 rounded-2xl bg-yellow-50 flex items-center justify-center text-2xl font-bold text-[#FFB800] group-hover:scale-110 transition-transform">
-                                            {item.UserId.firstName.charAt(0)}
+                                            {item?.UserId?.firstName?.charAt(0) || 'P'}
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-gray-900">{item.UserId.firstName} {item.UserId.lastName}</h3>
+                                            <div className="flex items-center space-x-2">
+                                                <h3 className="text-xl font-bold text-gray-900">{item?.UserId?.firstName} {item?.UserId?.lastName}</h3>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${item?.UserId?.isAvailable ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                    {item?.UserId?.isAvailable ? 'Available' : 'Unavailable'}
+                                                </span>
+                                            </div>
                                             <div className="flex items-center space-x-1 text-sm font-bold text-gray-800 mt-1">
-                                                <Star className={`w-4 h-4 ${item.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
-                                                <span>{item.rating > 0 ? item.rating.toFixed(1) : 'New'}</span>
-                                                <span className="text-gray-400 font-medium ml-1">({item.reviewCount} reviews)</span>
+                                                <Star className={`w-4 h-4 ${item?.rating > 0 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
+                                                <span>{item?.rating > 0 ? item?.rating?.toFixed(1) : 'New'}</span>
+                                                <span className="text-gray-400 font-medium ml-1">({item?.reviewCount} reviews)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -81,11 +86,11 @@ const CategoryProviders = () => {
                                     </div>
                                     <div className="flex items-center space-x-3 text-gray-500 text-sm">
                                         <Phone className="w-4 h-4" />
-                                        <span>{item.UserId.phone}</span>
+                                        <span>{item?.UserId?.phone || 'N/A'}</span>
                                     </div>
                                     <div className="flex items-center space-x-3 text-gray-500 text-sm text-wrap truncate">
                                         <Mail className="w-4 h-4" />
-                                        <span>{item.UserId.email}</span>
+                                        <span>{item?.UserId?.email || 'N/A'}</span>
                                     </div>
                                 </div>
 
@@ -94,6 +99,7 @@ const CategoryProviders = () => {
                                         Rs {item.price}<span className="text-xs text-gray-400 font-bold">/hr</span>
                                     </div>
                                     <button
+                                        onClick={() => navigate(`/provider-details/${item._id}`)}
                                         className="bg-[#111827] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#FFB800] transition-colors shadow-lg shadow-gray-100"
                                     >
                                         Book Now

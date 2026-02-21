@@ -17,7 +17,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 
-const Sidebar = ({ role, userName }) => {
+const Sidebar = ({ role, userName, hasUnreadMessages }) => {
     const location = useLocation();
 
     const adminLinks = [
@@ -29,6 +29,7 @@ const Sidebar = ({ role, userName }) => {
         { title: 'Payments', icon: CreditCard, path: '/admin/payments' },
         { title: 'Reviews', icon: Star, path: '/admin/reviews' },
         { title: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+        { title: 'Profile', icon: Users, path: '/profile' },
         { title: 'Settings', icon: Settings, path: '/admin/settings' },
     ];
 
@@ -40,6 +41,7 @@ const Sidebar = ({ role, userName }) => {
         { title: 'Earnings', icon: BarChart3, path: '/provider/earnings' },
         { title: 'Schedule', icon: Clock, path: '/provider/schedule' },
         { title: 'Messages', icon: MessageSquare, path: '/provider/messages' },
+        { title: 'Profile', icon: Users, path: '/profile' },
         { title: 'Settings', icon: Settings, path: '/provider/settings' },
     ];
 
@@ -50,6 +52,7 @@ const Sidebar = ({ role, userName }) => {
         { title: 'Favorites', icon: Heart, path: '/customer/favorites' },
         { title: 'Payments', icon: CreditCard, path: '/customer/payments' },
         { title: 'Messages', icon: MessageSquare, path: '/customer/messages' },
+        { title: 'Profile', icon: Users, path: '/profile' },
         { title: 'Settings', icon: Settings, path: '/customer/settings' },
     ];
 
@@ -58,7 +61,7 @@ const Sidebar = ({ role, userName }) => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        window.location.href = '/';
     };
 
     return (
@@ -84,15 +87,20 @@ const Sidebar = ({ role, userName }) => {
                             key={link.title}
                             to={link.path}
                             className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all duration-200 group ${isActive
-                                    ? 'bg-yellow-50 text-yellow-600 font-semibold'
-                                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
+                                ? 'bg-yellow-50 text-yellow-600 font-semibold'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                                 }`}
                         >
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-3 text-sm">
                                 <link.icon className={`w-5 h-5 ${isActive ? 'text-yellow-600' : 'text-gray-400 group-hover:text-gray-600'}`} />
                                 <span className="text-[15px]">{link.title}</span>
                             </div>
-                            {isActive && <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />}
+                            {link.title === 'Messages' && hasUnreadMessages && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 shadow-sm animate-pulse" />
+                            )}
+                            {isActive && link.title !== 'Messages' && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                            )}
                         </Link>
                     );
                 })}
@@ -100,15 +108,15 @@ const Sidebar = ({ role, userName }) => {
 
             {/* User Info & Logout */}
             <div className="p-4 border-t border-gray-50 mt-auto bg-gray-50/30">
-                <div className="flex items-center space-x-3 mb-4 p-2">
-                    <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold uppercase transition-transform hover:scale-105 border-2 border-white shadow-sm">
+                <Link to="/profile" className="flex items-center space-x-3 mb-4 p-2 hover:bg-gray-100/50 rounded-xl transition-colors group">
+                    <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold uppercase transition-all group-hover:scale-105 border-2 border-white shadow-sm">
                         {userName?.charAt(0) || 'U'}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>
                         <p className="text-xs text-gray-400 capitalize truncate">{role}</p>
                     </div>
-                </div>
+                </Link>
                 <button
                     onClick={handleLogout}
                     className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-red-500 hover:bg-red-50 font-medium transition-all duration-200"

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
 import {
   Calendar,
@@ -7,7 +8,9 @@ import {
   Star,
   TrendingUp,
   MoreHorizontal,
-  ChevronRight
+  ChevronRight,
+  Check,
+  X
 } from 'lucide-react';
 import {
   AreaChart,
@@ -25,6 +28,7 @@ import {
 import { APIAuthenticated } from '../http';
 
 const ProviderDashboard = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [providerStats, setProviderStats] = useState({
@@ -37,12 +41,17 @@ const ProviderDashboard = () => {
   const [pieData, setPieData] = useState([]);
   const [recentBookings, setRecentBookings] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [isAvailable, setIsAvailable] = useState(true);
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
     setUser(userData);
-    if (userData && userData._id) {
-      fetchProviderData(userData._id);
+    if (userData) {
+      setIsAvailable(userData.isAvailable !== undefined ? userData.isAvailable : true);
+      const providerId = userData._id || userData.id;
+      if (providerId) {
+        fetchProviderData(providerId);
+      }
     }
   }, []);
 
@@ -64,11 +73,48 @@ const ProviderDashboard = () => {
     }
   };
 
+  const toggleAvailability = async () => {
+    const providerId = user?._id || user?.id;
+    if (!providerId) {
+      console.error("No provider ID found");
+      return;
+    }
+    try {
+      const res = await APIAuthenticated.put(`/auth/availability/${providerId}`);
+      if (res.data.success) {
+        const newAvailableState = res.data.isAvailable;
+        setIsAvailable(newAvailableState);
+        // Update local storage user data
+        const updatedUser = { ...user, isAvailable: newAvailableState };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error("Error toggling availability:", error);
+    }
+  };
+
+  const handleBookingStatus = async (bookingId, status) => {
+    try {
+      const res = await APIAuthenticated.put(`/booking/status/${bookingId}`, { status });
+      if (res.data.success) {
+        // Refresh data
+        const providerId = user?._id || user?.id;
+        if (providerId) {
+          fetchProviderData(providerId);
+        }
+      }
+    } catch (error) {
+      console.error("Error updating booking status:", error);
+      alert("Failed to update booking status");
+    }
+  };
+
   const stats = [
-    { title: 'Total Bookings', value: providerStats.totalBookings.toString(), change: '+12%', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { title: 'Pending Requests', value: providerStats.pendingRequests.toString(), change: `${providerStats.pendingRequests} pending`, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
-    { title: 'Total Earnings', value: `Rs ${providerStats.totalEarnings.toLocaleString()}`, change: '+18%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
-    { title: 'Average Rating', value: providerStats.averageRating.toFixed(1), change: `${providerStats.averageRating}/5`, icon: Star, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { id: 'total', title: 'Total Bookings', value: providerStats.totalBookings.toString(), change: '+12%', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { id: 'pending', title: 'Pending Requests', value: providerStats.pendingRequests.toString(), change: `${providerStats.pendingRequests} pending`, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { id: 'earnings', title: 'Total Earnings', value: `Rs ${providerStats.totalEarnings.toLocaleString()}`, change: '+18%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
+    { id: 'rating', title: 'Average Rating', value: providerStats.averageRating.toFixed(1), change: `${providerStats.averageRating}/5`, icon: Star, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
   return (
@@ -80,15 +126,36 @@ const ProviderDashboard = () => {
             <h1 className="text-2xl font-bold text-gray-800">Hello, {user?.firstName || 'Provider'}!</h1>
             <p className="text-gray-500">Here's what's happening with your services today.</p>
           </div>
-          <button className="bg-[#FFB800] text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100">
-            Go Online
-          </button>
+          <div className="flex items-center space-x-4 bg-white px-4 py-2 rounded-2xl border border-gray-100 shadow-sm">
+            <span className={`text-sm font-bold ${isAvailable ? 'text-green-600' : 'text-gray-400'}`}>
+              {isAvailable ? 'Available' : 'Unavailable'}
+            </span>
+            <button
+              onClick={toggleAvailability}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isAvailable ? 'bg-green-500' : 'bg-gray-300'
+                }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isAvailable ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+              />
+            </button>
+          </div>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
-            <div key={stat.title} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+            <div
+              key={stat.title}
+              onClick={() => {
+                if (stat.id === 'total') navigate('/provider/bookings', { state: { filter: 'All' } });
+                if (stat.id === 'pending') navigate('/provider/bookings', { state: { filter: 'Pending' } });
+                if (stat.id === 'earnings') navigate('/provider/earnings');
+                if (stat.id === 'rating') navigate('/provider/reviews');
+              }}
+              className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-transform hover:scale-[1.02] cursor-pointer"
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className={`${stat.bg} p-2.5 rounded-lg`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -177,7 +244,12 @@ const ProviderDashboard = () => {
           <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-gray-800">Recent Bookings</h3>
-              <button className="text-[#FFB800] text-sm font-semibold hover:underline">View All</button>
+              <button
+                onClick={() => navigate('/provider/bookings')}
+                className="text-[#FFB800] text-sm font-semibold hover:underline"
+              >
+                View All
+              </button>
             </div>
             <div className="space-y-4">
               {recentBookings.map((booking) => (
@@ -189,13 +261,38 @@ const ProviderDashboard = () => {
                     <div>
                       <h4 className="text-sm font-bold text-gray-800">{booking.name}</h4>
                       <p className="text-xs text-gray-500">{booking.service}</p>
+                      {booking.message && (
+                        <p className="text-[10px] text-gray-400 mt-1 italic line-clamp-1 group-hover:line-clamp-none transition-all">
+                          "{booking.message}"
+                        </p>
+                      )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm font-bold text-gray-800">{booking.amount}</div>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${booking.statusColor}`}>
-                      {booking.status}
-                    </span>
+                  <div className="flex items-center space-x-2">
+                    {booking.status === 'Pending' && (
+                      <div className="flex items-center space-x-2 mr-4">
+                        <button
+                          onClick={() => handleBookingStatus(booking.id, 'Confirmed')}
+                          className="p-1.5 bg-green-100 text-green-600 rounded-lg hover:bg-green-200 transition-colors"
+                          title="Accept"
+                        >
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleBookingStatus(booking.id, 'Rejected')}
+                          className="p-1.5 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
+                          title="Reject"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-gray-800">{booking.amount}</div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${booking.statusColor}`}>
+                        {booking.status}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}

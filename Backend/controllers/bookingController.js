@@ -1,21 +1,34 @@
 const bookingModel = require('../model/bookingModel');
 const authModel = require('../model/authModel');
+const notificationModel = require('../model/notificationModel');
 
 const createBooking = async (req, res) => {
     try {
-        const { service, provider, date, time, amount } = req.body;
-        const customer = req.user._id; // From auth middleware
+        const { service, provider, date, time, amount, message } = req.body;
+        const customerId = req.user._id;
+        const customer = await authModel.findById(customerId);
 
         const newBooking = new bookingModel({
-            customer,
+            customer: customerId,
             service,
             provider,
             date,
             time,
-            amount
+            amount,
+            message
         });
 
         await newBooking.save();
+
+        // Create notification for provider
+        await notificationModel.create({
+            userId: provider,
+            title: 'New Booking Request',
+            message: `${customer.firstName} ${customer.lastName} has requested a ${service} service on ${date} at ${time}.`,
+            type: 'booking',
+            bookingId: newBooking._id
+        });
+
         res.status(201).json({ success: true, message: 'Booking created successfully', booking: newBooking });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -39,21 +52,18 @@ const getCustomerStats = async (req, res) => {
 
         const totalBookings = bookings.length;
         const pendingServices = bookings.filter(b => b.status === 'Pending' || b.status === 'Confirmed').length;
-        const completedServices = bookings.filter(b => b.status === 'Completed').length;
-        const totalSpent = 0; // Set to 0 as requested
+        const completedBookings = bookings.filter(b => b.status === 'Completed');
+        const totalSpent = completedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
 
-        // For spending chart - last 12 months (dummy logic for now, or group by month)
         // Grouping by month for the current year
         const currentYear = new Date().getFullYear();
         const monthlySpending = Array(12).fill(0);
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-        bookings.forEach(booking => {
-            if (booking.status === 'Completed') {
-                const date = new Date(booking.createdAt);
-                if (date.getFullYear() === currentYear) {
-                    monthlySpending[date.getMonth()] += 0; // Set to 0 as requested
-                }
+        completedBookings.forEach(booking => {
+            const date = new Date(booking.createdAt);
+            if (date.getFullYear() === currentYear) {
+                monthlySpending[date.getMonth()] += (booking.amount || 0);
             }
         });
 
@@ -67,7 +77,7 @@ const getCustomerStats = async (req, res) => {
             stats: {
                 totalBookings,
                 pendingServices,
-                completed: completedServices,
+                completed: completedBookings.length,
                 totalSpent
             },
             spendingData
@@ -161,7 +171,9 @@ const getAdminStats = async (req, res) => {
             status: b.status,
             statusColor: b.status === 'Completed' ? 'bg-green-100 text-green-700' :
                 b.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
-                    'bg-blue-100 text-blue-700'
+                    b.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
+                        b.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
         }));
 
         res.status(200).json({
@@ -229,10 +241,12 @@ const getProviderStats = async (req, res) => {
             service: b.service,
             amount: `Rs ${b.amount}`,
             status: b.status,
+            message: b.message,
             statusColor: b.status === 'Completed' ? 'bg-gray-100 text-gray-700' :
                 b.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
                     b.status === 'Confirmed' ? 'bg-green-100 text-green-700' :
-                        'bg-blue-100 text-blue-700'
+                        b.status === 'Rejected' ? 'bg-red-100 text-red-700' :
+                            'bg-blue-100 text-blue-700'
         }));
 
         // Calculate average rating
@@ -295,11 +309,49 @@ const rateBooking = async (req, res) => {
     }
 };
 
+const updateBookingStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        const providerId = req.user._id;
+
+        const booking = await bookingModel.findById(id);
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Booking not found' });
+        }
+
+        // Only the assigned provider can update status (or admin)
+        if (booking.provider.toString() !== providerId.toString() && req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Not authorized to update this booking' });
+        }
+
+        booking.status = status;
+        await booking.save();
+
+        res.status(200).json({ success: true, message: `Booking status updated to ${status}`, booking });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getProviderBookings = async (req, res) => {
+    try {
+        const providerId = req.params.id;
+        const bookings = await bookingModel.find({ provider: providerId }).populate('customer', 'firstName lastName phone email address');
+        res.status(200).json({ success: true, bookings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     createBooking,
     getCustomerBookings,
     getCustomerStats,
     getAdminStats,
     getProviderStats,
-    rateBooking
+    getProviderBookings,
+    rateBooking,
+    updateBookingStatus
 };

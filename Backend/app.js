@@ -14,6 +14,9 @@ const cors = require('cors');
 // Connect to the database
 dbConnect();
 
+const messageRoute = require("./routes/messageRoute");
+const notificationRoute = require("./routes/notificationRoute");
+
 app.use(cors());
 app.use(express.json());
 
@@ -21,6 +24,8 @@ app.use("/api/auth", authRoute)
 app.use("/api/service", serviceRoute)
 app.use("/api/contact", contactRoute);
 app.use("/api/booking", bookingRoute);
+app.use("/api/message", messageRoute);
+app.use("/api/notification", notificationRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

@@ -53,7 +53,23 @@ const getSingleService = async (req, res) => {
     try {
         const serviceId = req.params.id;
 
-        const service = await jobModel.findById(serviceId).populate("UserId", "firstName lastName email");
+        let service = await jobModel.findById(serviceId).populate("UserId", "firstName lastName email phone address isAvailable");
+
+        if (!service) {
+            // Check if it's a provider's user ID directly
+            const provider = await authModel.findOne({ _id: serviceId, role: 'provider' });
+            if (provider) {
+                service = {
+                    _id: provider._id,
+                    service: provider.serviceCategory,
+                    description: "Professional " + provider.serviceCategory + " services.",
+                    location: provider.address || "Location not specified",
+                    price: provider.price,
+                    UserId: provider
+                };
+            }
+        }
+
         if (!service) {
             return res.status(404).json({ message: "Service not found" });
         }
@@ -153,7 +169,7 @@ const getServicesByCategory = async (req, res) => {
         // 1. Get explicit service listings
         const servicesListing = await jobModel.find({
             service: { $regex: categoryRegex }
-        }).populate("UserId", "firstName lastName email phone address serviceCategory price");
+        }).populate("UserId", "firstName lastName email phone address serviceCategory price isAvailable");
 
         // 2. Get providers who registered with this category in their profile
         const providersByProfile = await authModel.find({
@@ -210,7 +226,8 @@ const getServicesByCategory = async (req, res) => {
                         lastName: p.lastName,
                         email: p.email,
                         phone: p.phone,
-                        address: p.address
+                        address: p.address,
+                        isAvailable: p.isAvailable
                     },
                     rating: parseFloat(avgRating.toFixed(1)),
                     reviewCount: bookings.length

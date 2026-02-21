@@ -16,7 +16,7 @@ const Navbar = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setIsLogged(false);
-    navigate('/login');
+    navigate('/');
     setIsOpen(false);
   };
 
@@ -62,12 +62,20 @@ const Navbar = () => {
       {/* Right: Auth Buttons */}
       <div className="hidden md:flex items-center space-x-6">
         {isLogged ? (
-          <button
-            onClick={handleLogout}
-            className="bg-red-500 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-red-600 transition-all shadow-lg shadow-red-100"
-          >
-            Logout
-          </button>
+          <div className="flex items-center space-x-4">
+            <Link
+              to="/profile"
+              className="text-gray-700 hover:text-gray-900 font-medium transition-colors"
+            >
+              Profile
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="bg-red-500 text-white px-6 py-2.5 rounded-xl font-semibold hover:bg-red-600 transition-all shadow-lg shadow-red-100"
+            >
+              Logout
+            </button>
+          </div>
         ) : (
           <>
             <Link to="/login" className="text-gray-700 hover:text-gray-900 font-medium transition-colors">Login</Link>
