@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
-import { Calendar, Clock, MapPin, User, CheckCircle2, XCircle, Loader2, Search, Filter } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, CheckCircle2, XCircle, Loader2, Search, Filter, MessageSquare } from 'lucide-react';
 import { APIAuthenticated } from '../http';
 
 const BookingHistory = () => {
@@ -90,8 +90,8 @@ const BookingHistory = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === tab
-                  ? 'bg-[#111827] text-white shadow-lg'
-                  : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-50'
+                ? 'bg-[#111827] text-white shadow-lg'
+                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-50'
                 }`}
             >
               {tab}
@@ -154,10 +154,11 @@ const BookingHistory = () => {
                       <div className="text-2xl font-black text-[#FFB800]">Rs {booking.amount}</div>
                     </div>
                     <button
-                      onClick={() => navigate(`/contact`)}
-                      className="px-6 py-3 rounded-2xl bg-gray-900 text-white font-bold hover:bg-yellow-500 transition-all shadow-lg shadow-gray-100"
+                      onClick={() => navigate(`/chat/${booking.provider?._id}`)}
+                      className="px-6 py-3 rounded-2xl bg-[#111827] text-white font-bold hover:bg-[#FFB800] transition-all shadow-lg flex items-center space-x-2"
                     >
-                      Contact
+                      <MessageSquare className="w-5 h-5" />
+                      <span>Chat</span>
                     </button>
                   </div>
                 </div>

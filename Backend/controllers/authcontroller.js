@@ -286,7 +286,7 @@ const toggleAvailability = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, phone, address, serviceCategory, price } = req.body;
+        const { firstName, lastName, phone, address, serviceCategory, price, removeProfilePicture } = req.body;
 
         if (req.user._id.toString() !== id) {
             return res.status(403).json({ message: "You can only update your own profile" });
@@ -301,6 +301,12 @@ const updateProfile = async (req, res) => {
         user.lastName = lastName || user.lastName;
         user.phone = phone || user.phone;
         user.address = address || user.address;
+
+        if (req.file) {
+            user.profilePicture = req.file.filename;
+        } else if (removeProfilePicture === 'true') {
+            user.profilePicture = "";
+        }
 
         if (user.role === 'provider') {
             user.serviceCategory = serviceCategory || user.serviceCategory;

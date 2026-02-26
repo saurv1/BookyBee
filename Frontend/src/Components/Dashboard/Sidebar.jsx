@@ -17,7 +17,7 @@ import {
     ChevronRight
 } from 'lucide-react';
 
-const Sidebar = ({ role, userName, hasUnreadMessages }) => {
+const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
     const location = useLocation();
 
     const adminLinks = [
@@ -109,8 +109,12 @@ const Sidebar = ({ role, userName, hasUnreadMessages }) => {
             {/* User Info & Logout */}
             <div className="p-4 border-t border-gray-50 mt-auto bg-gray-50/30">
                 <Link to="/profile" className="flex items-center space-x-3 mb-4 p-2 hover:bg-gray-100/50 rounded-xl transition-colors group">
-                    <div className="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold uppercase transition-all group-hover:scale-105 border-2 border-white shadow-sm">
-                        {userName?.charAt(0) || 'U'}
+                    <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold uppercase transition-all group-hover:scale-105 border border-white shadow-sm overflow-hidden">
+                        {profilePicture ? (
+                            <img src={`http://localhost:3005/uploads/${profilePicture}`} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                            userName?.charAt(0) || 'U'
+                        )}
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-800 truncate">{userName}</p>

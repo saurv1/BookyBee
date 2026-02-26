@@ -19,6 +19,7 @@ const notificationRoute = require("./routes/notificationRoute");
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 
 app.use("/api/auth", authRoute)
 app.use("/api/service", serviceRoute)

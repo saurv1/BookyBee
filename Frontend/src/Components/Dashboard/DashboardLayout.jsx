@@ -4,12 +4,15 @@ import Sidebar from './Sidebar';
 import { Search, Bell, X, Check } from 'lucide-react';
 import { APIAuthenticated } from '../../http';
 
-const DashboardLayout = ({ children, role, userName }) => {
+const DashboardLayout = ({ children }) => {
     const navigate = useNavigate();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showToast, setShowToast] = useState(null);
+
+    const user = JSON.parse(localStorage.getItem('user')) || {};
+    const { role, firstName: userName, profilePicture } = user;
 
     useEffect(() => {
         fetchNotifications();
@@ -72,7 +75,7 @@ const DashboardLayout = ({ children, role, userName }) => {
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
-            <Sidebar role={role} userName={userName} hasUnreadMessages={hasUnreadMessages} />
+            <Sidebar role={role} userName={userName} hasUnreadMessages={hasUnreadMessages} profilePicture={profilePicture} />
 
             <div className="pl-64 flex flex-col min-h-screen">
                 {/* Top Header */}

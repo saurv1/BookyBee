@@ -52,6 +52,10 @@ const authSchema = new mongoose.Schema({
     isAvailable: {
         type: Boolean,
         default: true
+    },
+    profilePicture: {
+        type: String,
+        default: ""
     }
 });
 

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
-import { User, Mail, Phone, MapPin, Briefcase, DollarSign, Save, Loader2, Lock, ShieldCheck } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Briefcase, DollarSign, Save, Loader2, Lock, ShieldCheck, Camera, Trash2, Upload, X, Check } from 'lucide-react';
 import { APIAuthenticated } from '../http';
 
 const Profile = () => {
@@ -16,6 +16,15 @@ const Profile = () => {
     const [initialData, setInitialData] = useState({});
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
+    const [showImageMenu, setShowImageMenu] = useState(false);
+    const [showCamera, setShowCamera] = useState(false);
+    const [removeFlag, setRemoveFlag] = useState(false);
+
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const fileInputRef = useRef(null);
 
     // Password state
     const [passwordData, setPasswordData] = useState({
@@ -51,7 +60,72 @@ const Profile = () => {
         }));
     };
 
-    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData);
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImageFile(file);
+            setRemoveFlag(false);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+            setShowImageMenu(false);
+        }
+    };
+
+    const startCamera = async () => {
+        setShowCamera(true);
+        setShowImageMenu(false);
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'user' }
+            });
+            if (videoRef.current) {
+                videoRef.current.srcObject = stream;
+            }
+        } catch (err) {
+            console.error("Error accessing camera:", err);
+            setMessage({ type: 'error', text: 'Could not access camera' });
+            setShowCamera(false);
+        }
+    };
+
+    const stopCamera = () => {
+        if (videoRef.current && videoRef.current.srcObject) {
+            const tracks = videoRef.current.srcObject.getTracks();
+            tracks.forEach(track => track.stop());
+        }
+        setShowCamera(false);
+    };
+
+    const takePhoto = () => {
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        if (video && canvas) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            canvas.toBlob((blob) => {
+                const file = new File([blob], "camera-photo.jpg", { type: "image/jpeg" });
+                setImageFile(file);
+                setImagePreview(canvas.toDataURL('image/jpeg'));
+                setRemoveFlag(false);
+                stopCamera();
+            }, 'image/jpeg');
+        }
+    };
+
+    const handleRemovePhoto = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        setRemoveFlag(true);
+        setShowImageMenu(false);
+    };
+
+    const isChanged = JSON.stringify(formData) !== JSON.stringify(initialData) || imageFile !== null || removeFlag;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -60,12 +134,29 @@ const Profile = () => {
         try {
             setLoading(true);
             setMessage({ type: '', text: '' });
-            const res = await APIAuthenticated.put(`/auth/update-profile/${user._id}`, formData);
+
+            const data = new FormData();
+            Object.keys(formData).forEach(key => {
+                data.append(key, formData[key]);
+            });
+            if (imageFile) {
+                data.append('profilePicture', imageFile);
+            } else if (removeFlag) {
+                data.append('removeProfilePicture', 'true');
+            }
+
+            const res = await APIAuthenticated.put(`/auth/update-profile/${user._id}`, data, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
             if (res.data.success) {
                 const updatedUser = res.data.data;
                 localStorage.setItem('user', JSON.stringify(updatedUser));
                 setUser(updatedUser);
                 setInitialData(formData);
+                setImageFile(null);
+                setRemoveFlag(false);
                 setMessage({ type: 'success', text: 'Profile updated successfully!' });
             }
         } catch (error) {
@@ -106,7 +197,7 @@ const Profile = () => {
     if (!user) return null;
 
     return (
-        <DashboardLayout role={user.role} userName={user.firstName}>
+        <DashboardLayout>
             <div className="max-w-4xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
                     <div>
@@ -119,12 +210,112 @@ const Profile = () => {
                     <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-500"></div>
                     <div className="px-8 pb-8">
                         <div className="relative -mt-16 mb-8">
-                            <div className="w-32 h-32 rounded-3xl bg-white p-2 shadow-lg">
-                                <div className="w-full h-full rounded-2xl bg-yellow-100 flex items-center justify-center text-4xl font-bold text-yellow-700 uppercase">
-                                    {user.firstName.charAt(0)}
+                            <div className="w-32 h-32 rounded-3xl bg-white p-2 shadow-lg relative group">
+                                <div className="w-full h-full rounded-2xl overflow-hidden relative">
+                                    {removeFlag ? (
+                                        <div className="w-full h-full bg-yellow-100 flex items-center justify-center text-4xl font-bold text-yellow-700 uppercase">
+                                            {user.firstName.charAt(0)}
+                                        </div>
+                                    ) : imagePreview || user.profilePicture ? (
+                                        <img
+                                            src={imagePreview || `http://localhost:3005/uploads/${user.profilePicture}`}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-yellow-100 flex items-center justify-center text-4xl font-bold text-yellow-700 uppercase">
+                                            {user.firstName.charAt(0)}
+                                        </div>
+                                    )}
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowImageMenu(!showImageMenu)}
+                                        className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                                    >
+                                        <Camera className="w-8 h-8 text-white" />
+                                    </button>
                                 </div>
+
+                                {/* Image Options Menu */}
+                                {showImageMenu && (
+                                    <>
+                                        <div
+                                            className="fixed inset-0 z-40"
+                                            onClick={() => setShowImageMenu(false)}
+                                        ></div>
+                                        <div className="absolute left-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <button
+                                                type="button"
+                                                onClick={startCamera}
+                                                className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-gray-50 text-gray-700 transition-colors"
+                                            >
+                                                <Camera className="w-4 h-4 text-gray-400" />
+                                                <span className="text-sm font-medium">Take Photo</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRef.current.click()}
+                                                className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-gray-50 text-gray-700 transition-colors"
+                                            >
+                                                <Upload className="w-4 h-4 text-gray-400" />
+                                                <span className="text-sm font-medium">Upload from device</span>
+                                            </button>
+                                            {(user.profilePicture || imagePreview) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleRemovePhoto}
+                                                    className="w-full px-4 py-2.5 text-left flex items-center space-x-3 hover:bg-red-50 text-red-600 transition-colors border-t border-gray-50 mt-1"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                    <span className="text-sm font-medium">Remove photo</span>
+                                                </button>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleImageChange}
+                                />
                             </div>
                         </div>
+
+                        {/* Camera Modal */}
+                        {showCamera && (
+                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                                <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                                    <div className="p-6 flex items-center justify-between border-b border-gray-100">
+                                        <h3 className="text-xl font-bold text-gray-800">Take Photo</h3>
+                                        <button onClick={stopCamera} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                                            <X className="w-5 h-5 text-gray-400" />
+                                        </button>
+                                    </div>
+                                    <div className="relative aspect-square bg-gray-900">
+                                        <video
+                                            ref={videoRef}
+                                            autoPlay
+                                            playsInline
+                                            className="w-full h-full object-cover scale-x-[-1]"
+                                        />
+                                        <canvas ref={canvasRef} className="hidden" />
+                                    </div>
+                                    <div className="p-6 flex justify-center">
+                                        <button
+                                            type="button"
+                                            onClick={takePhoto}
+                                            className="w-16 h-16 rounded-full bg-yellow-400 border-4 border-yellow-100 shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                                        >
+                                            <div className="w-8 h-8 rounded-full border-2 border-white"></div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {message.text && (
                             <div className={`mb-6 p-4 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'
