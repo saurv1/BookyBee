@@ -23,6 +23,9 @@ import ProviderDetails from './Pages/ProviderDetails';
 import Chat from './Pages/Chat';
 import ChatList from './Pages/ChatList';
 import ProviderBookings from './Pages/ProviderBookings';
+import PaymentForm from './Pages/paymentForm';
+import PaymentSuccess from './Pages/paymentSuccess';
+import PaymentFailure from './Pages/paymentFailure';
 
 const AppContent = () => {
   const location = useLocation();
@@ -32,7 +35,8 @@ const AppContent = () => {
     location.pathname.startsWith('/provider') ||
     location.pathname.startsWith('/customer') ||
     location.pathname.startsWith('/chat/') ||
-    location.pathname === '/profile';
+    location.pathname === '/profile' ||
+    location.pathname.startsWith('/payment');
 
   return (
     <>
@@ -61,6 +65,9 @@ const AppContent = () => {
         <Route path="/customer/messages" element={<ChatList role="customer" />} />
         <Route path="/provider/messages" element={<ChatList role="provider" />} />
         <Route path="/provider/bookings" element={<ProviderBookings />} />
+        <Route path="/payment" element={<PaymentForm />} />
+        <Route path="/payment/success" element={<PaymentSuccess />} />
+        <Route path="/payment/failure" element={<PaymentFailure />} />
       </Routes>
     </>
   );

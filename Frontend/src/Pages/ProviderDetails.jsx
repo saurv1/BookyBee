@@ -12,6 +12,7 @@ const ProviderDetails = () => {
     const [bookingLoading, setBookingLoading] = useState(false);
     const [error, setError] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
+    const [createdBooking, setCreatedBooking] = useState(null);
 
     const [bookingDetails, setBookingDetails] = useState({
         date: '',
@@ -70,8 +71,15 @@ const ProviderDetails = () => {
             });
 
             if (res.data.success) {
+                const booking = res.data.booking || {
+                    _id: res.data.bookingId,
+                    service: provider.service,
+                    date: bookingDetails.date,
+                    time: bookingDetails.time,
+                    amount: provider.price,
+                };
+                setCreatedBooking(booking);
                 setBookingSuccess(true);
-                setTimeout(() => navigate('/customer-dashboard'), 3000);
             }
         } catch (err) {
             console.error("Booking error:", err);
@@ -116,7 +124,7 @@ const ProviderDetails = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Provider Info */}
                         <div className="lg:col-span-2 space-y-8">
-                            <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+                            <div className="bg-white rounded-4xl p-8 border border-gray-100 shadow-sm">
                                 <div className="flex items-center space-x-6 mb-8">
                                     <div className="w-24 h-24 rounded-3xl bg-yellow-50 flex items-center justify-center text-3xl font-bold text-[#FFB800]">
                                         {provider?.UserId?.firstName?.charAt(0) || 'P'}
@@ -191,16 +199,28 @@ const ProviderDetails = () => {
                         {/* Booking Section */}
                         <div className="lg:col-span-1">
                             {bookingSuccess ? (
-                                <div className="bg-white rounded-[2rem] p-8 border border-green-100 shadow-xl text-center space-y-4">
+                                <div className="bg-white rounded-4xl p-8 border border-green-100 shadow-xl text-center space-y-5">
                                     <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto">
                                         <CheckCircle2 className="w-8 h-8 text-green-500" />
                                     </div>
-                                    <h3 className="text-2xl font-bold text-gray-900">Booking Requested!</h3>
-                                    <p className="text-gray-500 text-sm">Your booking request has been sent to the provider. You'll be notified once they respond.</p>
-                                    <p className="text-xs text-gray-400 pt-4">Redirecting to dashboard...</p>
+                                    <h3 className="text-2xl font-bold text-gray-900">Booking Created!</h3>
+                                    <p className="text-gray-500 text-sm">Your booking has been sent to the provider. You can now proceed to payment.</p>
+                                    <button
+                                        onClick={() => navigate('/payment', { state: { booking: createdBooking } })}
+                                        className="w-full bg-[#FFB800] text-white py-4 rounded-2xl font-black text-lg hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100 flex items-center justify-center space-x-2"
+                                    >
+                                        <DollarSign className="w-5 h-5" />
+                                        <span>Proceed to Payment</span>
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/customer/bookings')}
+                                        className="w-full bg-gray-50 text-gray-600 py-3 rounded-2xl font-bold hover:bg-gray-100 transition-all text-sm"
+                                    >
+                                        Pay Later
+                                    </button>
                                 </div>
                             ) : !isAvailable ? (
-                                <div className="bg-white rounded-[2rem] p-8 border border-red-100 shadow-xl space-y-6">
+                                <div className="bg-white rounded-4xl p-8 border border-red-100 shadow-xl space-y-6">
                                     <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
                                         <AlertCircle className="w-8 h-8 text-red-500" />
                                     </div>
@@ -216,7 +236,7 @@ const ProviderDetails = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <div className="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-xl space-y-6 sticky top-32">
+                                <div className="bg-white rounded-4xl p-8 border border-gray-100 shadow-xl space-y-6 sticky top-32">
                                     <h3 className="text-xl font-bold text-gray-900">Book Service</h3>
 
                                     <form onSubmit={handleConfirmBooking} className="space-y-4">
@@ -258,7 +278,7 @@ const ProviderDetails = () => {
                                                 value={bookingDetails.message}
                                                 onChange={handleInputChange}
                                                 placeholder="Ask a question or provide details about the job..."
-                                                className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all font-medium text-sm min-h-[100px] resize-none"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all font-medium text-sm min-h-25 resize-none"
                                             ></textarea>
                                         </div>
 

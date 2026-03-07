@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const PORT = 3005;
@@ -8,6 +9,7 @@ const authRoute = require('./routes/authRoute');
 const serviceRoute = require("./routes/serviceRoute");
 const contactRoute = require("./routes/contactRoute");
 const bookingRoute = require("./routes/bookingRoute");
+const paymentRoute = require("./routes/paymentRoute");
 
 const cors = require('cors');
 
@@ -27,6 +29,7 @@ app.use("/api/contact", contactRoute);
 app.use("/api/booking", bookingRoute);
 app.use("/api/message", messageRoute);
 app.use("/api/notification", notificationRoute);
+app.use("/api/payment", paymentRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

@@ -50,7 +50,7 @@ const ChatList = ({ role }) => {
                     <p className="text-gray-500 mt-1">Manage your active conversations with {role === 'customer' ? 'providers' : 'customers'}.</p>
                 </div>
 
-                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                <div className="bg-white rounded-4xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
                     <div className="p-6 border-b border-gray-50 bg-white">
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -84,7 +84,7 @@ const ChatList = ({ role }) => {
                                             </div>
                                             <div>
                                                 <h3 className="font-bold text-gray-900">{chat.firstName} {chat.lastName}</h3>
-                                                <p className="text-sm text-gray-500 line-clamp-1 truncate max-w-[200px] md:max-w-md italic opacity-80">
+                                                <p className="text-sm text-gray-500 line-clamp-1 truncate max-w-50 md:max-w-md italic opacity-80">
                                                     {chat.lastMessage}
                                                 </p>
                                                 <p className="text-[10px] text-gray-400 mt-1 uppercase font-bold tracking-wider">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
-import { Calendar, Clock, MapPin, User, CheckCircle2, XCircle, Loader2, Search, Filter, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, CheckCircle2, XCircle, Loader2, Search, Filter, MessageSquare, CreditCard } from 'lucide-react';
 import { APIAuthenticated } from '../http';
 
 const BookingHistory = () => {
@@ -78,7 +78,7 @@ const BookingHistory = () => {
               placeholder="Search by service or provider..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-white border border-gray-100 rounded-2xl pl-11 pr-4 py-3 min-w-[300px] focus:outline-none focus:border-yellow-200 shadow-sm transition-all"
+              className="bg-white border border-gray-100 rounded-2xl pl-11 pr-4 py-3 min-w-75 focus:outline-none focus:border-yellow-200 shadow-sm transition-all"
             />
           </div>
         </div>
@@ -160,6 +160,15 @@ const BookingHistory = () => {
                       <MessageSquare className="w-5 h-5" />
                       <span>Chat</span>
                     </button>
+                    {(!booking.paymentStatus || booking.paymentStatus === 'UNPAID' || booking.paymentStatus === 'FAILED') && booking.status !== 'Rejected' && booking.status !== 'Cancelled' && (
+                      <button
+                        onClick={() => navigate('/payment', { state: { booking } })}
+                        className="px-6 py-3 rounded-2xl bg-[#FFB800] text-white font-bold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100 flex items-center space-x-2"
+                      >
+                        <CreditCard className="w-5 h-5" />
+                        <span>Pay Now</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

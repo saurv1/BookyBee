@@ -39,6 +39,11 @@ const bookingSchema = new mongoose.Schema({
     },
     message: {
         type: String
+    },
+    paymentStatus: {
+        type: String,
+        enum: ['UNPAID', 'PENDING', 'COMPLETED', 'FAILED'],
+        default: 'UNPAID'
     }
 }, { timestamps: true });
 
