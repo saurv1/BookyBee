@@ -58,6 +58,16 @@ const ProviderBookings = () => {
             const res = await APIAuthenticated.put(`/booking/status/${bookingId}`, { status: newStatus });
             if (res.data.success) {
                 setBookings(bookings.map(b => b._id === bookingId ? { ...b, status: newStatus } : b));
+
+                if (newStatus === 'Completed') {
+                    const updatedBooking = bookings.find(b => b._id === bookingId);
+                    navigate('/rating-feedback', {
+                        state: {
+                            booking: { ...updatedBooking, status: newStatus },
+                            role: 'provider'
+                        }
+                    });
+                }
             }
         } catch (error) {
             console.error("Error updating status:", error);

@@ -207,7 +207,7 @@ const Profile = () => {
                 </div>
 
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="h-32 bg-gradient-to-r from-yellow-400 to-yellow-500"></div>
+                    <div className="h-32 bg-linear-to-r from-yellow-400 to-yellow-500"></div>
                     <div className="px-8 pb-8">
                         <div className="relative -mt-16 mb-8">
                             <div className="w-32 h-32 rounded-3xl bg-white p-2 shadow-lg relative group">
@@ -287,7 +287,7 @@ const Profile = () => {
 
                         {/* Camera Modal */}
                         {showCamera && (
-                            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                            <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                                 <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
                                     <div className="p-6 flex items-center justify-between border-b border-gray-100">
                                         <h3 className="text-xl font-bold text-gray-800">Take Photo</h3>

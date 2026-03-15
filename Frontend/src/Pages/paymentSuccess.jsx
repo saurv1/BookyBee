@@ -10,6 +10,7 @@ const PaymentSuccess = () => {
     const [verified, setVerified] = useState(false);
     const [error, setError] = useState('');
     const [transactionInfo, setTransactionInfo] = useState(null);
+    const [bookingForRating, setBookingForRating] = useState(null);
 
     useEffect(() => {
         verifyPayment();
@@ -42,6 +43,9 @@ const PaymentSuccess = () => {
                     amount: pendingPayment.amount,
                     gateway: pendingPayment.gateway,
                 });
+                if (pendingPayment.booking) {
+                    setBookingForRating(pendingPayment.booking);
+                }
                 // Clean up
                 localStorage.removeItem('pendingPayment');
             } else {
@@ -120,13 +124,23 @@ const PaymentSuccess = () => {
 
                         {/* Actions */}
                         <div className="space-y-3">
+                            {bookingForRating ? (
+                                <button
+                                    onClick={() => navigate('/rating-feedback', { state: { booking: bookingForRating, role: 'customer' } })}
+                                    className="w-full py-4 rounded-2xl bg-[#FFB800] text-white font-black text-lg hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100 flex items-center justify-center gap-2 active:scale-[0.98]"
+                                >
+                                    <Sparkles className="w-5 h-5" />
+                                    Rate {bookingForRating.provider?.firstName || 'Provider'}
+                                    <ArrowRight className="w-5 h-5" />
+                                </button>
+                            ) : null}
+
                             <button
                                 onClick={() => navigate('/customer/bookings')}
-                                className="w-full py-4 rounded-2xl bg-[#111827] text-white font-bold text-lg hover:bg-[#FFB800] transition-all shadow-lg flex items-center justify-center gap-2 active:scale-[0.98]"
+                                className="w-full py-4 rounded-2xl bg-[#111827] text-white font-bold text-lg hover:bg-gray-800 transition-all shadow-lg flex items-center justify-center gap-2 active:scale-[0.98]"
                             >
                                 <Calendar className="w-5 h-5" />
                                 View My Bookings
-                                <ArrowRight className="w-5 h-5" />
                             </button>
 
                             <button

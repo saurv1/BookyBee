@@ -42,7 +42,6 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
         { title: 'Schedule', icon: Clock, path: '/provider/schedule' },
         { title: 'Messages', icon: MessageSquare, path: '/provider/messages' },
         { title: 'Profile', icon: Users, path: '/profile' },
-        { title: 'Settings', icon: Settings, path: '/provider/settings' },
     ];
 
     const customerLinks = [
@@ -53,7 +52,6 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
         { title: 'Payments', icon: CreditCard, path: '/customer/payments' },
         { title: 'Messages', icon: MessageSquare, path: '/customer/messages' },
         { title: 'Profile', icon: Users, path: '/profile' },
-        { title: 'Settings', icon: Settings, path: '/customer/settings' },
     ];
 
     const links = role === 'admin' ? adminLinks : role === 'provider' ? providerLinks : customerLinks;

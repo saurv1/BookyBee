@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
 const express = require('express');
 const app = express();
 const PORT = 3005;
@@ -18,6 +18,7 @@ dbConnect();
 
 const messageRoute = require("./routes/messageRoute");
 const notificationRoute = require("./routes/notificationRoute");
+const reviewRoute = require("./routes/reviewRoute");
 
 app.use(cors());
 app.use(express.json());
@@ -30,6 +31,7 @@ app.use("/api/booking", bookingRoute);
 app.use("/api/message", messageRoute);
 app.use("/api/notification", notificationRoute);
 app.use("/api/payment", paymentRoute);
+app.use("/api/review", reviewRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

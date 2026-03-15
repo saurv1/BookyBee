@@ -55,6 +55,7 @@ const PaymentForm = () => {
                     pidx: res.data.pidx,
                     booking_id: bookingData._id,
                     gateway: selectedGateway,
+                    booking: bookingData
                 }));
                 // Redirect to payment gateway
                 window.location.href = res.data.url;
@@ -133,8 +134,8 @@ const PaymentForm = () => {
                                         key={gw.id}
                                         onClick={() => { setSelectedGateway(gw.id); setError(''); }}
                                         className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-300 text-left group ${selectedGateway === gw.id
-                                                ? 'border-[#FFB800] bg-yellow-50/50 shadow-lg shadow-yellow-100/50'
-                                                : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/50'
+                                            ? 'border-[#FFB800] bg-yellow-50/50 shadow-lg shadow-yellow-100/50'
+                                            : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/50'
                                             }`}
                                     >
                                         <div
@@ -150,8 +151,8 @@ const PaymentForm = () => {
                                         </div>
                                         <div
                                             className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${selectedGateway === gw.id
-                                                    ? 'border-[#FFB800] bg-[#FFB800]'
-                                                    : 'border-gray-300'
+                                                ? 'border-[#FFB800] bg-[#FFB800]'
+                                                : 'border-gray-300'
                                                 }`}
                                         >
                                             {selectedGateway === gw.id && (
@@ -218,8 +219,8 @@ const PaymentForm = () => {
                                 onClick={handlePayment}
                                 disabled={loading || !selectedGateway}
                                 className={`w-full py-4 rounded-2xl font-bold text-white text-lg transition-all duration-300 flex items-center justify-center gap-2 ${loading || !selectedGateway
-                                        ? 'bg-gray-300 cursor-not-allowed'
-                                        : 'bg-[#111827] hover:bg-[#FFB800] shadow-lg hover:shadow-xl active:scale-[0.98]'
+                                    ? 'bg-gray-300 cursor-not-allowed'
+                                    : 'bg-[#111827] hover:bg-[#FFB800] shadow-lg hover:shadow-xl active:scale-[0.98]'
                                     }`}
                             >
                                 {loading ? (

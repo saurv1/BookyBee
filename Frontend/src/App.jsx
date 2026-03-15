@@ -23,9 +23,14 @@ import ProviderDetails from './Pages/ProviderDetails';
 import Chat from './Pages/Chat';
 import ChatList from './Pages/ChatList';
 import ProviderBookings from './Pages/ProviderBookings';
+import ProviderEarnings from './Pages/ProviderEarnings';
+import ProviderSchedule from './Pages/ProviderSchedule';
+import ProviderReviews from './Pages/ProviderReviews';
+import CustomerPayments from './Pages/CustomerPayments';
 import PaymentForm from './Pages/paymentForm';
 import PaymentSuccess from './Pages/paymentSuccess';
 import PaymentFailure from './Pages/paymentFailure';
+import RatingFeedback from './Pages/RatingFeedback';
 
 const AppContent = () => {
   const location = useLocation();
@@ -36,7 +41,8 @@ const AppContent = () => {
     location.pathname.startsWith('/customer') ||
     location.pathname.startsWith('/chat/') ||
     location.pathname === '/profile' ||
-    location.pathname.startsWith('/payment');
+    location.pathname.startsWith('/payment') ||
+    location.pathname === '/rating-feedback';
 
   return (
     <>
@@ -59,15 +65,20 @@ const AppContent = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/booking-confirmation" element={<BookingConfirmation />} />
         <Route path="/customer/bookings" element={<BookingHistory />} />
+        <Route path="/customer/payments" element={<CustomerPayments />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/provider-details/:providerId" element={<ProviderDetails />} />
         <Route path="/chat/:receiverId" element={<Chat />} />
         <Route path="/customer/messages" element={<ChatList role="customer" />} />
         <Route path="/provider/messages" element={<ChatList role="provider" />} />
         <Route path="/provider/bookings" element={<ProviderBookings />} />
+        <Route path="/provider/earnings" element={<ProviderEarnings />} />
+        <Route path="/provider/schedule" element={<ProviderSchedule />} />
+        <Route path="/provider/reviews" element={<ProviderReviews />} />
         <Route path="/payment" element={<PaymentForm />} />
         <Route path="/payment/success" element={<PaymentSuccess />} />
         <Route path="/payment/failure" element={<PaymentFailure />} />
+        <Route path="/rating-feedback" element={<RatingFeedback />} />
       </Routes>
     </>
   );

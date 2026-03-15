@@ -353,4 +353,31 @@ const getTransactionByBooking = async (req, res) => {
     }
 };
 
-module.exports = { initiatePayment, paymentStatus, getTransactionByBooking };
+// Get transactions for a user
+const getTransactionsByCustomer = async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ success: false, message: "Email is required" });
+        }
+
+        const transactions = await Transaction.find({
+            "customerDetails.email": email,
+            status: "COMPLETED"
+        }).sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            transactions,
+        });
+    } catch (error) {
+        console.error("Error fetching customer transactions:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch transactions",
+            error: error.message,
+        });
+    }
+};
+
+module.exports = { initiatePayment, paymentStatus, getTransactionByBooking, getTransactionsByCustomer };

@@ -7,6 +7,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isActive = (path) => location.pathname === path;
+  const isDashboardActive = ['/admin-dashboard', '/service-provider', '/customer-dashboard'].includes(location.pathname);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLogged(!!token);
@@ -52,11 +55,11 @@ const Navbar = () => {
 
       {/* Middle: Links */}
       <div className="hidden md:flex space-x-8 text-gray-600 font-medium">
-        <Link to="/" className="hover:text-yellow-600 transition-colors">Home</Link>
-        <Link to="/services" className="hover:text-yellow-600 transition-colors">Services</Link>
-        <Link to="/how-it-works" className="hover:text-yellow-600 transition-colors">How It Works</Link>
-        <Link to="/contact" className="hover:text-yellow-600 transition-colors">Contact</Link>
-        <button onClick={handleDashboardClick} className="hover:text-yellow-600 transition-colors">Dashboard</button>
+        <Link to="/" className={`transition-colors ${isActive('/') ? 'text-yellow-600' : 'hover:text-yellow-600'}`}>Home</Link>
+        <Link to="/services" className={`transition-colors ${isActive('/services') ? 'text-yellow-600' : 'hover:text-yellow-600'}`}>Services</Link>
+        <Link to="/how-it-works" className={`transition-colors ${isActive('/how-it-works') ? 'text-yellow-600' : 'hover:text-yellow-600'}`}>How It Works</Link>
+        <Link to="/contact" className={`transition-colors ${isActive('/contact') ? 'text-yellow-600' : 'hover:text-yellow-600'}`}>Contact</Link>
+        <button onClick={handleDashboardClick} className={`transition-colors ${isDashboardActive ? 'text-yellow-600' : 'hover:text-yellow-600'}`}>Dashboard</button>
       </div>
 
       {/* Right: Auth Buttons */}
@@ -108,11 +111,11 @@ const Navbar = () => {
       {/* Mobile menu */}
       {isOpen && (
         <div className="absolute top-20 left-0 w-full bg-white shadow-xl flex flex-col items-center md:hidden py-8 space-y-4 border-t border-gray-50">
-          <Link to="/" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Home</Link>
-          <Link to="/services" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Services</Link>
-          <Link to="/how-it-works" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>How It Works</Link>
-          <Link to="/contact" className="text-gray-700 hover:text-yellow-600 font-medium" onClick={() => setIsOpen(false)}>Contact</Link>
-          <button onClick={handleDashboardClick} className="text-gray-700 hover:text-yellow-600 font-medium">Dashboard</button>
+          <Link to="/" className={`font-medium ${isActive('/') ? 'text-yellow-600' : 'text-gray-700 hover:text-yellow-600'}`} onClick={() => setIsOpen(false)}>Home</Link>
+          <Link to="/services" className={`font-medium ${isActive('/services') ? 'text-yellow-600' : 'text-gray-700 hover:text-yellow-600'}`} onClick={() => setIsOpen(false)}>Services</Link>
+          <Link to="/how-it-works" className={`font-medium ${isActive('/how-it-works') ? 'text-yellow-600' : 'text-gray-700 hover:text-yellow-600'}`} onClick={() => setIsOpen(false)}>How It Works</Link>
+          <Link to="/contact" className={`font-medium ${isActive('/contact') ? 'text-yellow-600' : 'text-gray-700 hover:text-yellow-600'}`} onClick={() => setIsOpen(false)}>Contact</Link>
+          <button onClick={handleDashboardClick} className={`font-medium ${isDashboardActive ? 'text-yellow-600' : 'text-gray-700 hover:text-yellow-600'}`}>Dashboard</button>
           <div className="pt-4 flex flex-col items-center space-y-4 w-full px-10">
             {isLogged ? (
               <button
