@@ -14,7 +14,8 @@ import {
     MessageSquare,
     Heart,
     LogOut,
-    ChevronRight
+    ChevronRight,
+    AlertCircle
 } from 'lucide-react';
 
 const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
@@ -28,9 +29,9 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
         { title: 'Services', icon: Wrench, path: '/admin/services' },
         { title: 'Payments', icon: CreditCard, path: '/admin/payments' },
         { title: 'Reviews', icon: Star, path: '/admin/reviews' },
+        { title: 'Complaints', icon: AlertCircle, path: '/admin/complaints' },
         { title: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
         { title: 'Profile', icon: Users, path: '/profile' },
-        { title: 'Settings', icon: Settings, path: '/admin/settings' },
     ];
 
     const providerLinks = [
@@ -41,6 +42,7 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
         { title: 'Earnings', icon: BarChart3, path: '/provider/earnings' },
         { title: 'Schedule', icon: Clock, path: '/provider/schedule' },
         { title: 'Messages', icon: MessageSquare, path: '/provider/messages' },
+        { title: 'Complaints', icon: AlertCircle, path: '/provider/complaints' },
         { title: 'Profile', icon: Users, path: '/profile' },
     ];
 
@@ -51,6 +53,7 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
         { title: 'Favorites', icon: Heart, path: '/customer/favorites' },
         { title: 'Payments', icon: CreditCard, path: '/customer/payments' },
         { title: 'Messages', icon: MessageSquare, path: '/customer/messages' },
+        { title: 'Complaints', icon: AlertCircle, path: '/customer/complaints' },
         { title: 'Profile', icon: Users, path: '/profile' },
     ];
 

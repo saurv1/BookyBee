@@ -19,6 +19,7 @@ dbConnect();
 const messageRoute = require("./routes/messageRoute");
 const notificationRoute = require("./routes/notificationRoute");
 const reviewRoute = require("./routes/reviewRoute");
+const complaintRoute = require("./routes/complaintRoute");
 
 app.use(cors());
 app.use(express.json());
@@ -32,6 +33,7 @@ app.use("/api/message", messageRoute);
 app.use("/api/notification", notificationRoute);
 app.use("/api/payment", paymentRoute);
 app.use("/api/review", reviewRoute);
+app.use("/api/complaint", complaintRoute);
 
 app.get('/', (req, res) => {
     res.send('Hello World!');

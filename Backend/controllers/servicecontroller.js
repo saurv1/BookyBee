@@ -159,6 +159,66 @@ const deleteService = async (req, res) => {
 }
 exports.deleteService = deleteService;
 
+const getAdminServices = async (req, res) => {
+    try {
+        const [allProviders, allBookings] = await Promise.all([
+            authModel.find({ role: 'provider' }),
+            bookingModel.find()
+        ]);
+
+        // Aggregate unique service categories from providers
+        const servicesMap = {};
+
+        allProviders.forEach(provider => {
+            const category = provider.serviceCategory || 'Other';
+            if (!servicesMap[category]) {
+                servicesMap[category] = {
+                    name: category,
+                    providerCount: 0,
+                    bookingCount: 0,
+                    activeBookings: 0,
+                    revenue: 0
+                };
+            }
+            servicesMap[category].providerCount++;
+        });
+
+        // Map bookings to services
+        allBookings.forEach(booking => {
+            const category = booking.service || 'Other';
+            if (servicesMap[category]) {
+                servicesMap[category].bookingCount++;
+                if (booking.status === 'Pending' || booking.status === 'Confirmed') {
+                    servicesMap[category].activeBookings++;
+                }
+                if (booking.status === 'Completed') {
+                    servicesMap[category].revenue += (booking.amount || 0);
+                }
+            } else {
+                // Handle cases where booking exists for a service but no providers are currently registered for it
+                // (Though unlikely with current schema, good for robustness)
+                servicesMap[category] = {
+                    name: category,
+                    providerCount: 0,
+                    bookingCount: 1,
+                    activeBookings: (booking.status === 'Pending' || booking.status === 'Confirmed') ? 1 : 0,
+                    revenue: booking.status === 'Completed' ? (booking.amount || 0) : 0
+                };
+            }
+        });
+
+        const servicesData = Object.values(servicesMap).sort((a, b) => b.providerCount - a.providerCount);
+
+        return res.status(200).json({
+            success: true,
+            data: servicesData
+        });
+
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+}
+
 const getServicesByCategory = async (req, res) => {
     try {
         const { category } = req.params;
@@ -243,4 +303,6 @@ const getServicesByCategory = async (req, res) => {
         return res.status(500).json({ message: "Something went wrong", error: error.message });
     }
 }
+
+exports.getAdminServices = getAdminServices;
 exports.getServicesByCategory = getServicesByCategory;

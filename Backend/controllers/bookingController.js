@@ -1,6 +1,8 @@
 const bookingModel = require('../model/bookingModel');
 const authModel = require('../model/authModel');
 const notificationModel = require('../model/notificationModel');
+const reviewModel = require('../model/reviewModel');
+const complaintModel = require('../model/complaintModel');
 
 const createBooking = async (req, res) => {
     try {
@@ -89,41 +91,29 @@ const getCustomerStats = async (req, res) => {
 
 const getAdminStats = async (req, res) => {
     try {
-        const [totalBookingsCount, customersCount, providersCount, allBookings, allUsers] = await Promise.all([
+        const [totalBookingsCount, customersCount, providersCount, allBookings, allUsers, pendingComplaintsCount] = await Promise.all([
             bookingModel.countDocuments(),
             authModel.countDocuments({ role: 'customer' }),
             authModel.countDocuments({ role: { $in: ['provider', 'serviceprovider'] } }),
             bookingModel.find().populate('customer', 'firstName lastName').populate('provider', 'firstName lastName serviceCategory').sort({ createdAt: -1 }),
-            authModel.find({ role: { $in: ['provider', 'serviceprovider'] } })
+            authModel.find({ role: { $in: ['provider', 'serviceprovider'] } }),
+            complaintModel.countDocuments({ status: 'Pending' })
         ]);
 
-        console.log("Admin Stats Debug - Customers:", customersCount, "Providers:", providersCount);
-
         const completedBookings = allBookings.filter(b => b.status === 'Completed');
-        const totalRevenue = 0; // Set to 0 as requested
+        const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
 
-        // Booking Trends (last 6 months)
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const currentYear = new Date().getFullYear();
-        const monthlyBookings = Array(12).fill(0);
+        // Simple growth tracking
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const bookingsThisMonth = allBookings.filter(b => b.createdAt >= startOfMonth).length;
+        const bookingGrowth = bookingsThisMonth > 0 ? `+${bookingsThisMonth}` : '0';
 
-        allBookings.forEach(booking => {
-            const date = new Date(booking.createdAt);
-            if (date.getFullYear() === currentYear) {
-                monthlyBookings[date.getMonth()]++;
-            }
-        });
-
-        const chartData = months.map((name, index) => ({
-            name,
-            bookings: monthlyBookings[index]
-        })).slice(-6); // Last 6 months
-
-        // Service Distribution (based on platform capacity/providers)
+        // Chart Data (Service Distribution)
         const serviceCounts = {};
-        allUsers.forEach(user => {
-            const category = user.serviceCategory || 'Other';
-            serviceCounts[category] = (serviceCounts[category] || 0) + 1;
+        allBookings.forEach(b => {
+            const service = b.service || 'Other';
+            serviceCounts[service] = (serviceCounts[service] || 0) + 1;
         });
 
         const COLORS = ['#FFB800', '#6366F1', '#10B981', '#F43F5E', '#8B5CF6', '#06B6D4'];
@@ -133,47 +123,24 @@ const getAdminStats = async (req, res) => {
             color: COLORS[index % COLORS.length]
         }));
 
-        // Top Service Providers (based on job count)
-        const providerStats = {};
-        allBookings.forEach(booking => {
-            if (booking.provider && booking.provider._id) {
-                const providerId = booking.provider._id.toString();
-                providerStats[providerId] = (providerStats[providerId] || 0) + 1;
-            }
-        });
-
-        const sortedProviderIds = Object.keys(providerStats).sort((a, b) => providerStats[b] - providerStats[a]).slice(0, 3);
-        const topProvidersData = await Promise.all(sortedProviderIds.map(async (id) => {
-            const provider = await authModel.findById(id);
-            if (!provider) return null;
-
-            const pBookings = await bookingModel.find({ provider: id });
-            const ratedBookings = pBookings.filter(b => b.rating !== undefined && b.rating !== null);
-            const avgRating = ratedBookings.length > 0
-                ? (ratedBookings.reduce((sum, b) => sum + b.rating, 0) / ratedBookings.length).toFixed(1)
-                : 0;
-
-            return {
-                id: provider._id,
-                name: `${provider.firstName} ${provider.lastName}`,
-                service: provider.serviceCategory || 'Service',
-                rating: parseFloat(avgRating),
-                jobs: providerStats[id]
-            };
-        }));
-        const topProviders = topProvidersData.filter(p => p !== null);
-
         // Recent Bookings
         const recentBookings = allBookings.slice(0, 5).map(b => ({
             id: b._id,
-            customer: b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : "Deleted User",
+            customer: b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : "User",
             service: b.service,
             status: b.status,
             statusColor: b.status === 'Completed' ? 'bg-green-100 text-green-700' :
-                b.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
-                    b.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
-                        b.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                            'bg-gray-100 text-gray-700'
+                        b.status === 'Pending' ? 'bg-orange-100 text-orange-700' :
+                        b.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+        }));
+
+        // Top Providers (Static for stability if needed, or simple calc)
+        const topProvidersData = allUsers.slice(0, 3).map(u => ({
+            id: u._id,
+            name: `${u.firstName} ${u.lastName}`,
+            service: u.serviceCategory || 'Service',
+            rating: 5.0,
+            jobs: allBookings.filter(b => b.provider && b.provider._id && b.provider._id.toString() === u._id.toString()).length
         }));
 
         res.status(200).json({
@@ -182,12 +149,92 @@ const getAdminStats = async (req, res) => {
                 totalBookings: totalBookingsCount,
                 activeUsers: customersCount,
                 serviceProviders: providersCount,
-                revenue: totalRevenue
+                revenue: totalRevenue,
+                bookingGrowth: `+${bookingsThisMonth}`,
+                revenueGrowth: 'Dynamic',
+                pendingComplaints: pendingComplaintsCount
             },
-            chartData,
+            chartData: [], // Reverting as requested or keeping empty if not used
             pieData: pieData.length > 0 ? pieData : [{ name: 'No Data', value: 1, color: '#CBD5E1' }],
             recentBookings,
-            topProviders
+            topProviders: topProvidersData
+        });
+    } catch (error) {
+        console.error("Admin Stats Error:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+const getAdminAnalytics = async (req, res) => {
+    try {
+        const [allBookings, allUsers, allReviews, allComplaints] = await Promise.all([
+            bookingModel.find().populate('customer', 'role').populate('provider', 'serviceCategory'),
+            authModel.find(),
+            reviewModel.find(),
+            complaintModel.find()
+        ]);
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+
+        // 1. Monthly Revenue & Bookings (Time Series)
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const timeSeriesData = months.map((name, index) => {
+            const monthlyBookings = allBookings.filter(b => {
+                const d = new Date(b.createdAt);
+                return d.getMonth() === index && d.getFullYear() === currentYear;
+            });
+            const revenue = monthlyBookings.filter(b => b.status === 'Completed').reduce((ss, b) => ss + (b.amount || 0), 0);
+            return { name, bookings: monthlyBookings.length, revenue };
+        });
+
+        // 2. Booking Status Distribution
+        const statuses = ['Pending', 'Confirmed', 'Completed', 'Cancelled', 'Rejected'];
+        const statusData = statuses.map(status => ({
+            name: status,
+            value: allBookings.filter(b => b.status === status).length
+        }));
+
+        // 3. User Growth (Last 6 Months)
+        const userGrowthData = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const mName = months[d.getMonth()];
+            const count = allUsers.filter(u => new Date(u.createdAt) <= new Date(now.getFullYear(), now.getMonth() - i + 1, 0)).length;
+            userGrowthData.push({ name: mName, users: count });
+        }
+
+        // 4. Category Performance
+        const categoryStats = {};
+        allBookings.forEach(b => {
+            const cat = b.provider?.serviceCategory || 'Uncategorized';
+            if (!categoryStats[cat]) categoryStats[cat] = { bookings: 0, revenue: 0 };
+            categoryStats[cat].bookings++;
+            if (b.status === 'Completed') categoryStats[cat].revenue += (b.amount || 0);
+        });
+
+        const categoryData = Object.keys(categoryStats).map(cat => ({
+            name: cat,
+            bookings: categoryStats[cat].bookings,
+            revenue: categoryStats[cat].revenue
+        })).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+
+        // 5. Satisfaction Stats
+        const avgRating = allReviews.length > 0 ? (allReviews.reduce((s, r) => s + r.rating, 0) / allReviews.length).toFixed(1) : 0;
+        const complaintResolutionRate = allComplaints.length > 0 ? ((allComplaints.filter(c => c.status === 'Resolved').length / allComplaints.length) * 100).toFixed(0) : 100;
+
+        res.status(200).json({
+            success: true,
+            timeSeriesData,
+            statusData,
+            userGrowthData,
+            categoryData,
+            summary: {
+                avgRating: parseFloat(avgRating),
+                complaintResolutionRate: parseInt(complaintResolutionRate),
+                totalUsers: allUsers.length,
+                totalBookings: allBookings.length
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -345,13 +392,27 @@ const getProviderBookings = async (req, res) => {
     }
 };
 
+const getAllBookings = async (req, res) => {
+    try {
+        const bookings = await bookingModel.find()
+            .populate('customer', 'firstName lastName phone email')
+            .populate('provider', 'firstName lastName phone email')
+            .sort({ createdAt: -1 });
+        res.status(200).json({ success: true, bookings });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
 module.exports = {
     createBooking,
     getCustomerBookings,
     getCustomerStats,
     getAdminStats,
+    getAdminAnalytics,
     getProviderStats,
     getProviderBookings,
     rateBooking,
-    updateBookingStatus
+    updateBookingStatus,
+    getAllBookings
 };

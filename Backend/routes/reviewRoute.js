@@ -34,4 +34,18 @@ router.get('/target/:targetId', async (req, res) => {
     }
 });
 
+router.get('/admin/all', async (req, res) => {
+    try {
+        const reviews = await Review.find({})
+            .populate({ path: 'reviewerId', select: 'firstName lastName email' })
+            .populate({ path: 'targetId', select: 'firstName lastName email' })
+            .populate({ path: 'bookingId', select: 'service date' })
+            .sort({ createdAt: -1 });
+        res.status(200).json({ success: true, reviews });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+});
+
 module.exports = router;

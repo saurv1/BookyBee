@@ -3,17 +3,17 @@ const mongoose = require('mongoose');
 const reviewSchema = new mongoose.Schema({
     bookingId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Booking',
+        ref: 'booking',
         required: true,
     },
     reviewerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'user',
         required: true,
     },
     targetId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'user',
         required: true,
     },
     role: {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
 import {
   Users,
@@ -8,7 +9,8 @@ import {
   TrendingUp,
   MoreHorizontal,
   Star,
-  Trash2
+  Trash2,
+  AlertCircle
 } from 'lucide-react';
 import {
   LineChart,
@@ -26,6 +28,7 @@ import {
 import { APIAuthenticated } from '../http';
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [platformStats, setPlatformStats] = useState({
@@ -67,12 +70,12 @@ const AdminDashboard = () => {
   };
 
   const stats = [
-    { title: 'Total Bookings', value: platformStats.totalBookings.toLocaleString(), change: '+12%', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-100' },
-    { title: 'Active Users', value: platformStats.activeUsers.toLocaleString(), change: '+8%', icon: Users, color: 'text-green-600', bg: 'bg-green-100' },
-    { title: 'Service Providers', value: platformStats.serviceProviders.toLocaleString(), change: '+15%', icon: Briefcase, color: 'text-orange-600', bg: 'bg-orange-100' },
-    { title: 'Revenue', value: `Rs ${platformStats.revenue.toLocaleString()}`, change: '+22%', icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-100' },
+    { title: 'Total Bookings', value: platformStats.totalBookings.toLocaleString(), change: platformStats.bookingGrowth || '+0%', icon: Calendar, color: 'text-blue-600', bg: 'bg-blue-100', path: '/admin/bookings' },
+    { title: 'Active Users', value: platformStats.activeUsers.toLocaleString(), change: '+0%', icon: Users, color: 'text-green-600', bg: 'bg-green-100', path: '/admin/users' },
+    { title: 'Service Providers', value: platformStats.serviceProviders.toLocaleString(), change: '+0%', icon: Briefcase, color: 'text-orange-600', bg: 'bg-orange-100', path: '/admin/providers' },
+    { title: 'Revenue', value: `Rs ${platformStats.revenue.toLocaleString()}`, change: platformStats.revenueGrowth || '+0%', icon: DollarSign, color: 'text-purple-600', bg: 'bg-purple-100', path: '/admin/payments' },
+    { title: 'Pending Complaints', value: (platformStats.pendingComplaints || 0).toLocaleString(), change: 'Action Required', icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-100', path: '/admin/complaints' },
   ];
-
 
   return (
     <DashboardLayout role="admin" userName={user?.firstName || 'Admin'}>
@@ -91,9 +94,13 @@ const AdminDashboard = () => {
         )}
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {stats.map((stat) => (
-            <div key={stat.title} className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+            <div
+              key={stat.title}
+              onClick={() => navigate(stat.path)}
+              className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer transform hover:-translate-y-1"
+            >
               <div className="flex items-center justify-between mb-4">
                 <div className={`${stat.bg} p-3 rounded-xl`}>
                   <stat.icon className={`w-6 h-6 ${stat.color}`} />
@@ -111,49 +118,9 @@ const AdminDashboard = () => {
         </div>
 
         {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Booking Trends */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="font-bold text-gray-800">Booking Trends</h3>
-              <button className="text-gray-400 hover:text-gray-600">
-                <MoreHorizontal className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="h-75 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#94a3b8', fontSize: 12 }}
-                    dy={10}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fill: '#94a3b8', fontSize: 12 }}
-                  />
-                  <Tooltip
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="bookings"
-                    stroke="#FFB800"
-                    strokeWidth={3}
-                    dot={{ r: 4, fill: '#FFB800', strokeWidth: 2, stroke: '#fff' }}
-                    activeDot={{ r: 6, strokeWidth: 0 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 gap-8">
           {/* Service Distribution */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm max-w-4xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="font-bold text-gray-800">Service Distribution</h3>
               <button className="text-gray-400 hover:text-gray-600">

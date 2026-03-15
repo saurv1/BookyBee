@@ -380,4 +380,21 @@ const getTransactionsByCustomer = async (req, res) => {
     }
 };
 
-module.exports = { initiatePayment, paymentStatus, getTransactionByBooking, getTransactionsByCustomer };
+const getAllTransactions = async (req, res) => {
+    try {
+        const transactions = await Transaction.find({ status: "COMPLETED" }).sort({ createdAt: -1 });
+        return res.status(200).json({
+            success: true,
+            transactions,
+        });
+    } catch (error) {
+        console.error("Error fetching all transactions:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch all transactions",
+            error: error.message,
+        });
+    }
+};
+
+module.exports = { initiatePayment, paymentStatus, getTransactionByBooking, getTransactionsByCustomer, getAllTransactions };
