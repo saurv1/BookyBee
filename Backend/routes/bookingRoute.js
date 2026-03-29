@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createBooking, getCustomerBookings, getCustomerStats, getAdminStats, getAdminAnalytics, getProviderStats, rateBooking, updateBookingStatus, getProviderBookings, getAllBookings } = require('../controllers/bookingController');
+const { createBooking, getBookingById, getCustomerBookings, getCustomerStats, getAdminStats, getAdminAnalytics, getProviderStats, rateBooking, updateBookingStatus, getProviderBookings, getAllBookings } = require('../controllers/bookingController');
 const isAutenticated = require('../middleware/isAutenticated');
 const restrictTo = require('../middleware/restrictTo');
 
@@ -14,5 +14,6 @@ router.get('/provider/stats/:id', isAutenticated, restrictTo('provider', 'admin'
 router.get('/provider/:id', isAutenticated, restrictTo('provider', 'admin'), getProviderBookings);
 router.post('/rate', isAutenticated, rateBooking);
 router.put('/status/:id', isAutenticated, updateBookingStatus);
+router.get('/:id', isAutenticated, getBookingById);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
-import { Calendar, Clock, MapPin, User, CheckCircle2, XCircle, Loader2, Search, Filter, MessageSquare, CreditCard } from 'lucide-react';
+import { Calendar, Clock, MapPin, User, CheckCircle2, XCircle, Loader2, Search, Filter, MessageSquare, CreditCard, FileText } from 'lucide-react';
 import { APIAuthenticated } from '../http';
 
 const BookingHistory = () => {
@@ -160,6 +160,18 @@ const BookingHistory = () => {
                       <MessageSquare className="w-5 h-5" />
                       <span>Chat</span>
                     </button>
+                    {(booking.paymentStatus === 'COMPLETED' || (booking.paymentStatus && booking.paymentStatus.toUpperCase() === 'COMPLETED')) && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/invoice/${booking._id}`);
+                        }}
+                        className="px-6 py-3 rounded-2xl bg-white border border-gray-100 text-gray-700 font-bold hover:border-[#FFB800] hover:text-[#FFB800] transition-all shadow-sm flex items-center space-x-2"
+                      >
+                        <FileText className="w-5 h-5" />
+                        <span>Invoice</span>
+                      </button>
+                    )}
                     {(!booking.paymentStatus || booking.paymentStatus === 'UNPAID' || booking.paymentStatus === 'FAILED') && booking.status !== 'Rejected' && booking.status !== 'Cancelled' && (
                       <button
                         onClick={() => navigate('/payment', { state: { booking } })}

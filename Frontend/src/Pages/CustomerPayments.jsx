@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../Components/Dashboard/DashboardLayout';
-import { CreditCard, Calendar, CheckCircle2, XCircle, Loader2, Search, Filter, Hash } from 'lucide-react';
+import { CreditCard, Calendar, CheckCircle2, XCircle, Loader2, Search, Filter, Hash, FileText } from 'lucide-react';
 import { APIAuthenticated, API } from '../http';
 
 const CustomerPayments = () => {
+    const navigate = useNavigate();
     const [payments, setPayments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
@@ -114,9 +115,30 @@ const CustomerPayments = () => {
                                     </div>
 
                                     <div className="flex items-center justify-between lg:justify-end lg:space-x-8 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-50">
-                                        <div className="text-right">
-                                            <p className="text-xs text-gray-400 font-bold uppercase mb-1">Total Amount</p>
-                                            <div className="text-2xl font-black text-[#FFB800]">Rs {payment.amount}</div>
+                                        <div className="text-right flex items-center space-x-4">
+                                            <div>
+                                                <p className="text-xs text-gray-400 font-bold uppercase mb-1">Total Amount</p>
+                                                <div className="text-2xl font-black text-[#FFB800]">Rs {payment.amount}</div>
+                                            </div>
+                                            {payment.status === 'COMPLETED' && (payment.booking_id || (payment.product_id && payment.product_id.includes('-'))) && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        const bId = payment.booking_id || (payment.product_id?.includes('-') ? payment.product_id.split('-')[1] : null);
+                                                        console.log("Navigating to invoice for booking:", bId);
+                                                        if (bId) {
+                                                            navigate(`/invoice/${bId}`);
+                                                        } else {
+                                                            alert("Could not identify the booking associated with this payment.");
+                                                        }
+                                                    }}
+                                                    className="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-[#FFB800] transition-all shadow-lg active:scale-95 flex items-center space-x-2 whitespace-nowrap"
+                                                >
+                                                    <FileText className="w-4 h-4" />
+                                                    <span>View Invoice</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

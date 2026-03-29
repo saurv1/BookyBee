@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { CheckCircle2, ArrowRight, Loader2, Home, Calendar, CreditCard, Sparkles } from 'lucide-react';
+import { CheckCircle2, ArrowRight, Loader2, Home, Calendar, CreditCard, Sparkles, FileText } from 'lucide-react';
 import { API } from '../http';
 
 const PaymentSuccess = () => {
@@ -142,6 +142,16 @@ const PaymentSuccess = () => {
                                 <Calendar className="w-5 h-5" />
                                 View My Bookings
                             </button>
+
+                            {bookingForRating && (
+                                <button
+                                    onClick={() => navigate(`/invoice/${bookingForRating._id}`)}
+                                    className="w-full py-4 rounded-2xl bg-white border-2 border-gray-100 text-gray-700 font-bold text-lg hover:border-[#FFB800] hover:text-[#FFB800] transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+                                >
+                                    <FileText className="w-5 h-5" />
+                                    Generate Invoice
+                                </button>
+                            )}
 
                             <button
                                 onClick={() => navigate('/')}

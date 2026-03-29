@@ -38,14 +38,25 @@ const AdminComplaints = () => {
         }
     };
 
-    const filteredComplaints = complaints.filter(c => {
+    const filteredComplaints = (complaints || []).filter(c => {
+        if (!c) return false;
+        
         const matchesStatus = filterStatus === 'All' || c.status === filterStatus;
         const searchStr = searchTerm.toLowerCase();
-        const userName = `${c.user?.firstName} ${c.user?.lastName}`.toLowerCase();
-        const subject = c.subject.toLowerCase();
-        const message = c.message.toLowerCase();
-
-        return matchesStatus && (userName.includes(searchStr) || subject.includes(searchStr) || message.includes(searchStr));
+        
+        const firstName = c.user?.firstName || '';
+        const lastName = c.user?.lastName || '';
+        const userName = `${firstName} ${lastName}`.toLowerCase();
+        const subject = (c.subject || '').toLowerCase();
+        const message = (c.message || '').toLowerCase();
+        const email = (c.user?.email || '').toLowerCase();
+        
+        return matchesStatus && (
+            userName.includes(searchStr) || 
+            subject.includes(searchStr) || 
+            message.includes(searchStr) ||
+            email.includes(searchStr)
+        );
     });
 
     const getStatusColor = (status) => {

@@ -38,6 +38,7 @@ import PaymentForm from './Pages/paymentForm';
 import PaymentSuccess from './Pages/paymentSuccess';
 import PaymentFailure from './Pages/paymentFailure';
 import RatingFeedback from './Pages/RatingFeedback';
+import Invoice from './Pages/Invoice';
 
 const AppContent = () => {
     const location = useLocation();
@@ -49,6 +50,7 @@ const AppContent = () => {
         location.pathname.startsWith('/chat/') ||
         location.pathname === '/profile' ||
         location.pathname.startsWith('/payment') ||
+        location.pathname.startsWith('/invoice/') ||
         location.pathname === '/rating-feedback';
 
     return (
@@ -94,6 +96,7 @@ const AppContent = () => {
                 <Route path="/payment/success" element={<PaymentSuccess />} />
                 <Route path="/payment/failure" element={<PaymentFailure />} />
                 <Route path="/rating-feedback" element={<RatingFeedback />} />
+                <Route path="/invoice/:bookingId" element={<Invoice />} />
             </Routes>
         </>
     );
