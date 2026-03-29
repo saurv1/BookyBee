@@ -15,8 +15,8 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
     const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('user')));
 
-    const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const scrollToTop = () => {
+        // No longer needed to scroll to bottom as new messages are at top
     };
 
     useEffect(() => {
@@ -44,7 +44,7 @@ const Chat = () => {
         }
     };
 
-    useEffect(scrollToBottom, [messages]);
+    // useEffect(scrollToBottom, [messages]);
 
     const fetchReceiverDetails = async () => {
         try {
@@ -148,7 +148,7 @@ const Chat = () => {
                                 </div>
                             </div>
                         ) : (
-                            messages.map((msg, idx) => (
+                            [...messages].reverse().map((msg, idx) => (
                                 <div
                                     key={msg._id || idx}
                                     className={`flex ${msg.sender === currentUser._id ? 'justify-end' : 'justify-start'}`}
@@ -165,7 +165,6 @@ const Chat = () => {
                                 </div>
                             ))
                         )}
-                        <div ref={messagesEndRef} />
                     </div>
 
                     {/* Input Area */}

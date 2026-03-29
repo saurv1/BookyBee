@@ -29,7 +29,8 @@ const ChatList = ({ role }) => {
             setLoading(false); // Optimization: set early if we want to show empty state fast
             const res = await APIAuthenticated.get('/message/list');
             if (res.data.success) {
-                setChats(res.data.data);
+                const sortedChats = res.data.data.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                setChats(sortedChats);
             }
         } catch (err) {
             console.error("Error fetching chat list:", err);
