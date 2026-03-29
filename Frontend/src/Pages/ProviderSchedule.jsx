@@ -11,24 +11,42 @@ const ProviderSchedule = () => {
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('user'));
         setUser(userData);
-        if (userData?._id) {
-            fetchBookings(userData._id);
+        const providerId = userData?._id || userData?.id;
+        if (providerId) {
+            fetchBookings(providerId);
         }
     }, []);
 
-    const fetchBookings = async (userId) => {
+    const fetchBookings = async (providerId) => {
         try {
             setLoading(true);
-            const res = await APIAuthenticated.get(`/booking/provider/${userId}`);
+            const res = await APIAuthenticated.get(`/booking/provider/${providerId}`);
             if (res.data.success) {
-                // Keep only Confirmed and Pending
-                const upcoming = res.data.bookings.filter(b => b.status === 'Confirmed' || b.status === 'Pending');
+                // Keep only Confirmed and Pending, and sort by date
+                const upcoming = res.data.bookings
+                    .filter(b => b.status === 'Confirmed' || b.status === 'Pending')
+                    .sort((a, b) => {
+                        const dateA = new Date(`${a.date} ${a.time}`);
+                        const dateB = new Date(`${b.date} ${b.time}`);
+                        return dateA - dateB;
+                    });
                 setBookings(upcoming);
             }
         } catch (error) {
             console.error("Error fetching schedule:", error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const getStatusStyles = (status) => {
+        switch (status) {
+            case 'Confirmed': return 'bg-green-100 text-green-700 border-green-200';
+            case 'Pending': return 'bg-orange-100 text-orange-700 border-orange-200';
+            case 'Rejected': return 'bg-red-100 text-red-700 border-red-200';
+            case 'Completed': return 'bg-gray-100 text-gray-700 border-gray-200';
+            case 'Cancelled': return 'bg-red-50 text-red-400 border-red-100';
+            default: return 'bg-blue-100 text-blue-700 border-blue-200';
         }
     };
 
@@ -85,11 +103,10 @@ const ProviderSchedule = () => {
                                     </div>
 
                                     <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
-                                        <div className={`px-3 py-1 text-xs font-black uppercase tracking-wider rounded-full ${booking.status === 'Confirmed' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                                            }`}>
-                                            {booking.status} status
+                                        <div className={`px-3 py-1 text-[10px] font-black uppercase tracking-wider rounded-full border ${getStatusStyles(booking.status)}`}>
+                                            {booking.status}
                                         </div>
-                                        <div className="font-black text-gray-900 text-lg">
+                                        <div className="font-black text-[#FFB800] text-lg">
                                             Rs {booking.amount}
                                         </div>
                                     </div>

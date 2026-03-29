@@ -4,7 +4,6 @@ import {
     LayoutDashboard,
     Calendar,
     Users,
-    Settings,
     Star,
     CreditCard,
     BarChart3,
@@ -12,9 +11,7 @@ import {
     Wrench,
     Clock,
     MessageSquare,
-    Heart,
     LogOut,
-    ChevronRight,
     AlertCircle
 } from 'lucide-react';
 
@@ -37,7 +34,6 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
     const providerLinks = [
         { title: 'Dashboard', icon: LayoutDashboard, path: '/service-provider' },
         { title: 'Bookings', icon: Calendar, path: '/provider/bookings' },
-        { title: 'My Services', icon: Wrench, path: '/provider/services' },
         { title: 'Reviews', icon: Star, path: '/provider/reviews' },
         { title: 'Earnings', icon: BarChart3, path: '/provider/earnings' },
         { title: 'Schedule', icon: Clock, path: '/provider/schedule' },
@@ -50,7 +46,6 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
         { title: 'Dashboard', icon: LayoutDashboard, path: '/customer-dashboard' },
         { title: 'My Bookings', icon: Calendar, path: '/customer/bookings' },
         { title: 'Services', icon: Wrench, path: '/services' },
-        { title: 'Favorites', icon: Heart, path: '/customer/favorites' },
         { title: 'Payments', icon: CreditCard, path: '/customer/payments' },
         { title: 'Messages', icon: MessageSquare, path: '/customer/messages' },
         { title: 'Complaints', icon: AlertCircle, path: '/customer/complaints' },
