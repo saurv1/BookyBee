@@ -1,8 +1,20 @@
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import heroImage from '../assets/illustrations.png';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    } else {
+      navigate('/services');
+    }
+  };
   const services = [
     {
       name: 'House Cleaning', desc: 'Professional cleaning services', price: 'From ₹ 350/hr', color: 'bg-blue-50', iconColor: 'text-blue-500', iconBg: 'bg-blue-100',
@@ -58,19 +70,24 @@ const Home = () => {
             Book trusted service providers for all your household needs. From cleaning to repairs, find the perfect expert near you in minutes.
           </p>
 
-          <div className="relative max-w-md">
+          <form onSubmit={handleSearch} className="relative max-w-md">
             <input
               type="text"
               placeholder="What service do you need?"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-12 pr-32 py-4 rounded-2xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
             />
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
               🔍
             </div>
-            <button className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#FFB800] text-white px-8 py-2.5 rounded-xl font-bold hover:bg-yellow-500 transition-colors">
+            <button 
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#FFB800] text-white px-8 py-2.5 rounded-xl font-bold hover:bg-yellow-500 transition-colors"
+            >
               Search
             </button>
-          </div>
+          </form>
 
           <div className="flex items-center space-x-12 pt-4">
             <div className="flex items-center space-x-3">

@@ -67,7 +67,7 @@ const Login = () => {
             </div>
           )}
 
-          <form className="space-y-5" onSubmit={handleLogin}>
+          <form className="space-y-5" onSubmit={handleLogin} autoComplete="off">
             {/* Email Address */}
             <div>
               <label className="block text-sm font-semibold text-[#1e293b] mb-2">Email Address / Username</label>
@@ -80,10 +80,12 @@ const Login = () => {
                 </div>
                 <input
                   type="text"
+                  name="email"
                   placeholder="Enter your email or username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -100,10 +102,12 @@ const Login = () => {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  autoComplete="new-password"
                   required
                 />
                 <button
