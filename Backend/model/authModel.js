@@ -27,6 +27,10 @@ const authSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    district: {
+        type: String,
+        required: true
+    },
     role: {
         type: String,
         enum: ["customer", "provider", "admin"],

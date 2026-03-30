@@ -18,6 +18,7 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     address: '',
+    district: '',
     serviceCategory: '',
     price: ''
   });
@@ -81,27 +82,25 @@ const Register = () => {
           <div className="flex space-x-2 mb-6 bg-gray-50 p-1 rounded-xl">
             <button
               onClick={() => setActiveTab('customer')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-lg font-semibold text-sm transition-all ${activeTab === 'customer'
+              className={`flex-1 flex items-center justify-center py-2.5 rounded-lg font-semibold text-sm transition-all ${activeTab === 'customer'
                 ? 'bg-white text-[#1e293b] shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              <span className="text-lg">👤</span>
               <span>Customer</span>
             </button>
             <button
               onClick={() => setActiveTab('provider')}
-              className={`flex-1 flex items-center justify-center space-x-2 py-2.5 rounded-lg font-semibold text-sm transition-all ${activeTab === 'provider'
+              className={`flex-1 flex items-center justify-center py-2.5 rounded-lg font-semibold text-sm transition-all ${activeTab === 'provider'
                 ? 'bg-white text-[#1e293b] shadow-sm'
                 : 'text-gray-500 hover:text-gray-700'
                 }`}
             >
-              <span className="text-lg">🔧</span>
               <span>Provider</span>
             </button>
           </div>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
+          <form className="space-y-4" onSubmit={handleSubmit} autoComplete="off">
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -148,6 +147,7 @@ const Register = () => {
                   onChange={handleChange}
                   className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
                   required
+                  autoComplete="off"
                 />
               </div>
             </div>
@@ -190,6 +190,7 @@ const Register = () => {
                   onChange={handleChange}
                   className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
                   required
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -224,6 +225,7 @@ const Register = () => {
                   onChange={handleChange}
                   className="w-full pl-12 pr-12 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
                   required
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -238,6 +240,36 @@ const Register = () => {
                     )}
                   </svg>
                 </button>
+              </div>
+            </div>
+            
+            {/* District searchable input */}
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700 ml-1">District</label>
+              <div className="relative">
+                <input
+                  list="districts-list"
+                  name="district"
+                  value={formData.district}
+                  onChange={handleChange}
+                  placeholder="Type or select a district"
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+                  required
+                />
+                <datalist id="districts-list">
+                  {[
+                    "Achham", "Arghakhanchi", "Baglung", "Baitadi", "Bajhang", "Bajura", "Banke", "Bara", "Bardiya", "Bhaktapur",
+                    "Bhojpur", "Chitwan", "Dadeldhura", "Dailekh", "Dang", "Darchula", "Dhading", "Dhankuta", "Dhanusa", "Dolakha",
+                    "Dolpa", "Doti", "Eastern Rukum", "Gorkha", "Gulmi", "Humla", "Ilam", "Jajarkot", "Jhapa", "Jumla",
+                    "Kailali", "Kalikot", "Kanchanpur", "Kapilvastu", "Kaski", "Kathmandu", "Kavrepalanchok", "Khotang", "Lalitpur", "Lamjung",
+                    "Mahottari", "Makwanpur", "Manang", "Morang", "Mugu", "Mustang", "Myagdi", "Nawalpur", "Nuwakot", "Okhaldhunga",
+                    "Palpa", "Panchthar", "Parasi", "Parbat", "Parsa", "Pyuthan", "Ramechhap", "Rasuwa", "Rautahat", "Rolpa",
+                    "Rupandehi", "Salyan", "Sankhuwasabha", "Saptari", "Sarlahi", "Sindhuli", "Sindhupalchok", "Siraha", "Solukhumbu", "Sunsari",
+                    "Surkhet", "Syangja", "Tanahun", "Taplejung", "Terhathum", "Udayapur", "Western Rukum"
+                  ].map((district) => (
+                    <option key={district} value={district} />
+                  ))}
+                </datalist>
               </div>
             </div>
 

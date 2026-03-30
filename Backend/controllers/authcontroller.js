@@ -6,11 +6,11 @@ const sendEmail = require('../Services/sendEmail');
 
 const register = async (req, res) => {
     try {
-        const { firstName, lastName, password, email, phone, address, role, serviceCategory, price } = req.body;
+        const { firstName, lastName, password, email, phone, address, district, role, serviceCategory, price } = req.body;
 
         console.log(req.body);
 
-        if (!firstName || !lastName || !password || !email || !phone || !address || !role) {
+        if (!firstName || !lastName || !password || !email || !phone || !address || !district || !role) {
             return res.status(400).json({ message: "All mandatory fields are required" });
         }
 
@@ -36,6 +36,7 @@ const register = async (req, res) => {
             phone,
             password: bcrypt.hashSync(password, 10),
             address,
+            district,
             role,
             serviceCategory: role === 'provider' ? serviceCategory : undefined,
             price: role === 'provider' ? price : undefined
@@ -286,7 +287,7 @@ const toggleAvailability = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        const { firstName, lastName, phone, address, serviceCategory, price, removeProfilePicture } = req.body;
+        const { firstName, lastName, phone, address, district, serviceCategory, price, removeProfilePicture } = req.body;
 
         if (req.user._id.toString() !== id) {
             return res.status(403).json({ message: "You can only update your own profile" });
@@ -301,6 +302,7 @@ const updateProfile = async (req, res) => {
         user.lastName = lastName || user.lastName;
         user.phone = phone || user.phone;
         user.address = address || user.address;
+        user.district = district || user.district;
 
         if (req.file) {
             user.profilePicture = req.file.filename;

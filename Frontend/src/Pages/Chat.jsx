@@ -15,9 +15,9 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
     const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('user')));
 
-    const scrollToTop = () => {
-        // No longer needed to scroll to bottom as new messages are at top
-    };
+    // const scrollToTop = () => {
+    //     // No longer needed to scroll to bottom as new messages are at top
+    // };
 
     useEffect(() => {
         if (!currentUser) {
@@ -103,7 +103,7 @@ const Chat = () => {
             <Navbar />
 
             <div className="flex-1 pt-24 pb-6 px-6 max-w-5xl mx-auto w-full flex flex-col">
-                <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 flex-1 flex flex-col overflow-hidden">
+                <div className="bg-white rounded-4xl shadow-sm border border-gray-100 flex-1 flex flex-col overflow-hidden">
                     {/* Header */}
                     <div className="p-6 border-b border-gray-50 flex items-center justify-between bg-white sticky top-0 z-10">
                         <div className="flex items-center space-x-4">

@@ -10,6 +10,7 @@ const Profile = () => {
         lastName: '',
         phone: '',
         address: '',
+        district: '',
         serviceCategory: '',
         price: ''
     });
@@ -44,6 +45,7 @@ const Profile = () => {
                 lastName: userData.lastName || '',
                 phone: userData.phone || '',
                 address: userData.address || '',
+                district: userData.district || '',
                 serviceCategory: userData.serviceCategory || '',
                 price: userData.price || ''
             };
@@ -379,6 +381,34 @@ const Profile = () => {
                                             className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-semibold text-gray-700 ml-1">District</label>
+                                <div className="relative">
+                                    <input
+                                        list="profile-districts-list"
+                                        name="district"
+                                        value={formData.district}
+                                        onChange={handleChange}
+                                        placeholder="Type or select a district"
+                                        className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all"
+                                    />
+                                    <datalist id="profile-districts-list">
+                                        {[
+                                            "Achham", "Arghakhanchi", "Baglung", "Baitadi", "Bajhang", "Bajura", "Banke", "Bara", "Bardiya", "Bhaktapur",
+                                            "Bhojpur", "Chitwan", "Dadeldhura", "Dailekh", "Dang", "Darchula", "Dhading", "Dhankuta", "Dhanusa", "Dolakha",
+                                            "Dolpa", "Doti", "Eastern Rukum", "Gorkha", "Gulmi", "Humla", "Ilam", "Jajarkot", "Jhapa", "Jumla",
+                                            "Kailali", "Kalikot", "Kanchanpur", "Kapilvastu", "Kaski", "Kathmandu", "Kavrepalanchok", "Khotang", "Lalitpur", "Lamjung",
+                                            "Mahottari", "Makwanpur", "Manang", "Morang", "Mugu", "Mustang", "Myagdi", "Nawalpur", "Nuwakot", "Okhaldhunga",
+                                            "Palpa", "Panchthar", "Parasi", "Parbat", "Parsa", "Pyuthan", "Ramechhap", "Rasuwa", "Rautahat", "Rolpa",
+                                            "Rupandehi", "Salyan", "Sankhuwasabha", "Saptari", "Sarlahi", "Sindhuli", "Sindhupalchok", "Siraha", "Solukhumbu", "Sunsari",
+                                            "Surkhet", "Syangja", "Tanahun", "Taplejung", "Terhathum", "Udayapur", "Western Rukum"
+                                        ].map((district) => (
+                                            <option key={district} value={district} />
+                                        ))}
+                                    </datalist>
                                 </div>
                             </div>
 
