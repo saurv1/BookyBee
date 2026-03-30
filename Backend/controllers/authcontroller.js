@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
+const dns = require('dns').promises;
 const authModel = require('../model/authModel');
+const tempAuthModel = require('../model/tempAuthModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../Services/sendEmail');
@@ -14,6 +16,31 @@ const register = async (req, res) => {
             return res.status(400).json({ message: "All mandatory fields are required" });
         }
 
+        if (phone.length !== 10) {
+            return res.status(400).json({ message: "Phone number must be exactly 10 digits" });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Please enter a valid email address" });
+        }
+
+        // Domain verification check
+        const domain = email.split('@')[1];
+        try {
+            const mxRecords = await dns.resolveMx(domain);
+            if (!mxRecords || mxRecords.length === 0) {
+                return res.status(400).json({ message: "invalid mail, try with another mail" });
+            }
+        } catch (err) {
+            console.error("DNS MX lookup error:", err);
+            return res.status(400).json({ message: "invalid mail, try with another mail" });
+        }
+
+        if (password.length <= 7) {
+            return res.status(400).json({ message: "Password must be more than 7 characters" });
+        }
+
         if (role === 'provider') {
             if (!serviceCategory) {
                 return res.status(400).json({ message: "Service category is required for providers" });
@@ -23,13 +50,32 @@ const register = async (req, res) => {
             }
         }
 
-        //find [{},{},{}]
-        const userExists = await authModel.findOne({ email })
+        // Check if a VERIFIED user already exists in authModel
+        const userExists = await authModel.findOne({ 
+            $or: [{ email: email }, { phone: phone }]
+        });
+
         if (userExists) {
-            return res.status(409).json({ message: "User already exists" });
+            return res.status(409).json({ message: "Account already exists with this email or phone" });
+        }
+        
+        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+
+        try {
+            await sendEmail({
+                email,
+                subject: "Account Verification OTP",
+                message: `Your OTP for BookyBee registration is: ${otp}. Please verify your account to proceed.`,
+            });
+        } catch (err) {
+            console.error("Email Sending Error:", err);
+            return res.status(400).json({ message: "invalid mail, try with another mail" });
         }
 
-        const newUser = await authModel.create({
+        // Use upsert to update if exists in tempAuthModel, or create new
+        await tempAuthModel.findOneAndDelete({ $or: [{ email }, { phone }] });
+
+        const pendingUser = await tempAuthModel.create({
             firstName,
             lastName,
             email,
@@ -37,14 +83,15 @@ const register = async (req, res) => {
             password: bcrypt.hashSync(password, 10),
             address,
             district,
+            otp,
             role,
             serviceCategory: role === 'provider' ? serviceCategory : undefined,
             price: role === 'provider' ? price : undefined
         });
 
         return res.status(201).json({
-            message: "User registered successfully",
-            data: newUser
+            message: "OTP sent to your email. Please verify to complete registration.",
+            data: { email: pendingUser.email }
         })
 
     } catch (err) {
@@ -81,10 +128,14 @@ const login = async (req, res) => {
             }
         }
 
-        const user = await authModel.findOne({ email });
+        const user = await authModel.findOne({ email }).select("+isOtpVerified");
 
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
+        }
+
+        if (user.isOtpVerified === false) {
+            return res.status(401).json({ message: "Your account is not verified. Please verify your email first." });
         }
 
         const isPasswordValid = bcrypt.compareSync(password, user.password);
@@ -155,7 +206,38 @@ const verifyOtp = async (req, res) => {
             message: "Please provide email,otp"
         })
     }
-    // check if that otp is correct or not of that email
+    // check if it's a NEW registration (exists in tempAuthModel)
+    const tempUser = await tempAuthModel.findOne({ email });
+
+    if (tempUser) {
+        if (tempUser.otp !== otp) {
+            return res.status(400).json({ message: "Invalid otp" });
+        } else {
+            // Verify and Create REAL user record
+            await authModel.create({
+                firstName: tempUser.firstName,
+                lastName: tempUser.lastName,
+                email: tempUser.email,
+                phone: tempUser.phone,
+                password: tempUser.password,
+                address: tempUser.address,
+                district: tempUser.district,
+                role: tempUser.role,
+                serviceCategory: tempUser.serviceCategory,
+                price: tempUser.price,
+                isOtpVerified: true
+            });
+
+            // Delete temporary registration
+            await tempAuthModel.deleteOne({ email });
+
+            return res.status(200).json({
+                message: "Email verified and account created successfully!"
+            });
+        }
+    }
+
+    // Otherwise, check if it's a FORGOT PASSWORD verify (exists in authModel)
     const user = await authModel.findOne({ email }).select("+otp +isOtpVerified")
 
     if (!user) {
@@ -217,7 +299,7 @@ const resetPassword = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
     try {
-        const users = await authModel.find().select("-password");
+        const users = await authModel.find().select("-password +isOtpVerified");
         res.status(200).json({
             success: true,
             data: users
@@ -364,7 +446,7 @@ const changePassword = async (req, res) => {
 const getUserDetails = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await authModel.findById(id).select("-password");
+        const user = await authModel.findById(id).select("-password +isOtpVerified");
         if (!user) {
             return res.status(404).json({ success: false, message: "User not found" });
         }

@@ -78,13 +78,14 @@ const AdminUsers = () => {
                                     <th className="px-6 py-4">Customer</th>
                                     <th className="px-6 py-4">Contact Info</th>
                                     <th className="px-6 py-4">Joined Date</th>
+                                    <th className="px-6 py-4">Status</th>
                                     <th className="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-10 text-center">
+                                        <td colSpan="5" className="px-6 py-10 text-center">
                                             <div className="flex flex-col items-center">
                                                 <div className="w-10 h-10 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin"></div>
                                                 <p className="mt-4 text-gray-500 font-medium">Loading customers...</p>
@@ -93,7 +94,7 @@ const AdminUsers = () => {
                                     </tr>
                                 ) : filteredUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan="4" className="px-6 py-20 text-center">
+                                        <td colSpan="5" className="px-6 py-20 text-center">
                                             <div className="max-w-xs mx-auto">
                                                 <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
                                                     <UsersIcon className="w-8 h-8" />
@@ -123,6 +124,11 @@ const AdminUsers = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <p className="text-sm text-gray-600">{new Date(u.createdAt || Date.now()).toLocaleDateString()}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${u.isOtpVerified ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {u.isOtpVerified ? 'Verified' : 'Unverified'}
+                                                </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button

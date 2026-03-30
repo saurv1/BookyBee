@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Home from './Pages/Home';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
+import RegistrationVerification from './Pages/RegistrationVerification';
 import Navbar from './Pages/Navbar';
 import CustomerDashboard from './Pages/CustomerDashboard';
 import ProviderDashboard from './Pages/ProviderDashboard';
@@ -60,6 +61,7 @@ const AppContent = () => {
                 <Route path='/' element={<Home />} />
                 <Route path='/login' element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/registration-verification" element={<RegistrationVerification />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/verify-otp" element={<VerifyOtp />} />
                 <Route path="/reset-password" element={<ResetPassword />} />

@@ -31,6 +31,22 @@ const Register = () => {
     e.preventDefault();
     setError('');
 
+    if (formData.phone.length !== 10) {
+      setError('Phone number must be exactly 10 digits');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    if (formData.password.length <= 7) {
+      setError('Password must be more than 7 characters');
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -44,8 +60,8 @@ const Register = () => {
       };
 
       const response = await API.post('/auth/register', dataToSubmit);
-      if (response.status === 201) {
-        navigate('/login');
+      if (response.status === 201 || response.status === 200) {
+        navigate('/registration-verification', { state: { email: formData.email } });
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed. Please try again.');
