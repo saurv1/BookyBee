@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const dns = require('dns').promises;
 const authModel = require('../model/authModel');
-const tempAuthModel = require('../model/tempAuthModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../Services/sendEmail');
@@ -9,8 +8,6 @@ const sendEmail = require('../Services/sendEmail');
 const register = async (req, res) => {
     try {
         const { firstName, lastName, password, email, phone, address, district, role, serviceCategory, price } = req.body;
-
-        console.log(req.body);
 
         if (!firstName || !lastName || !password || !email || !phone || !address || !district || !role) {
             return res.status(400).json({ message: "All mandatory fields are required" });
@@ -50,13 +47,11 @@ const register = async (req, res) => {
             }
         }
 
-        // Check if a VERIFIED user already exists in authModel
-        const userExists = await authModel.findOne({ 
-            $or: [{ email: email }, { phone: phone }]
-        });
+        // Check if a user already exists with the same phone number
+        const userExists = await authModel.findOne({ phone: phone });
 
         if (userExists) {
-            return res.status(409).json({ message: "Account already exists with this email or phone" });
+            return res.status(409).json({ message: "Account already exists with this phone number" });
         }
         
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
@@ -72,10 +67,10 @@ const register = async (req, res) => {
             return res.status(400).json({ message: "invalid mail, try with another mail" });
         }
 
-        // Use upsert to update if exists in tempAuthModel, or create new
-        await tempAuthModel.findOneAndDelete({ $or: [{ email }, { phone }] });
+        // Clean up previous unverified attempts for this user in authModel
+        await authModel.findOneAndDelete({ phone: phone, isOtpVerified: false });
 
-        const pendingUser = await tempAuthModel.create({
+        const pendingUser = await authModel.create({
             firstName,
             lastName,
             email,
@@ -86,7 +81,9 @@ const register = async (req, res) => {
             otp,
             role,
             serviceCategory: role === 'provider' ? serviceCategory : undefined,
-            price: role === 'provider' ? price : undefined
+            price: role === 'provider' ? price : undefined,
+            isOtpVerified: false,
+            verificationExpiresAt: new Date()
         });
 
         return res.status(201).json({
@@ -102,7 +99,6 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        console.log("Login request body:", req.body);
         let { email, password } = req.body;
         email = email?.trim();
 
@@ -165,7 +161,6 @@ const login = async (req, res) => {
 const forgotPassword = async (req, res) => {
     let { email } = req.body;
     email = email?.trim();
-    console.log("Forgot password request for email:", email);
 
     try {
         const user = await authModel.findOne({ email }).select("+otp +isOtpVerified");
@@ -174,7 +169,6 @@ const forgotPassword = async (req, res) => {
         }
 
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
-        console.log("OTP generated:", otp);
 
         user.otp = otp;
         user.isOtpVerified = false;
@@ -206,35 +200,18 @@ const verifyOtp = async (req, res) => {
             message: "Please provide email,otp"
         })
     }
-    // check if it's a NEW registration (exists in tempAuthModel)
-    const tempUser = await tempAuthModel.findOne({ email });
+    // check if it's a NEW registration (exists in authModel but not verified)
+    const newUser = await authModel.findOne({ email, otp, isOtpVerified: false }).select("+isOtpVerified");
 
-    if (tempUser) {
-        if (tempUser.otp !== otp) {
-            return res.status(400).json({ message: "Invalid otp" });
-        } else {
-            // Verify and Create REAL user record
-            await authModel.create({
-                firstName: tempUser.firstName,
-                lastName: tempUser.lastName,
-                email: tempUser.email,
-                phone: tempUser.phone,
-                password: tempUser.password,
-                address: tempUser.address,
-                district: tempUser.district,
-                role: tempUser.role,
-                serviceCategory: tempUser.serviceCategory,
-                price: tempUser.price,
-                isOtpVerified: true
-            });
+    if (newUser) {
+        newUser.isOtpVerified = true;
+        newUser.otp = undefined;
+        newUser.verificationExpiresAt = undefined; // Stop the auto-deletion TTL
+        await newUser.save();
 
-            // Delete temporary registration
-            await tempAuthModel.deleteOne({ email });
-
-            return res.status(200).json({
-                message: "Email verified and account created successfully!"
-            });
-        }
+        return res.status(200).json({
+            message: "Email verified and account created successfully!"
+        });
     }
 
     // Otherwise, check if it's a FORGOT PASSWORD verify (exists in authModel)
@@ -335,14 +312,12 @@ const deleteUser = async (req, res) => {
 const toggleAvailability = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log("Toggling availability for user:", id);
 
         // We can get the user directly from req.user if it's the same ID
         // or fetch it from DB to be sure we have the latest state
         const user = await authModel.findById(id);
 
         if (!user) {
-            console.log("User not found in toggleAvailability");
             return res.status(404).json({ message: "User not found" });
         }
 
@@ -352,8 +327,6 @@ const toggleAvailability = async (req, res) => {
 
         user.isAvailable = !user.isAvailable;
         await user.save();
-
-        console.log("New availability state:", user.isAvailable);
 
         res.status(200).json({
             success: true,

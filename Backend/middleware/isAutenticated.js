@@ -18,8 +18,6 @@ const isAutenticated = async (req, res, next) => {
 
     try {
         const decode = jwt.verify(token, "helloworld");
-        console.log("Decoded Token:", decode);
-
         const doesUserExist = await authModel.findById(decode.id);
 
         //email,password,role, username

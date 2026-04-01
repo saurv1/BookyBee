@@ -17,9 +17,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      console.log('Attempting login with:', { email, password });
       const response = await API.post('/auth/login', { email, password });
-      console.log('Login response:', response.data);
 
       if (response.status === 200) {
         const { token, data } = response.data;

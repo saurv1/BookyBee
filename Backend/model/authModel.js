@@ -15,8 +15,7 @@ const authSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     phone: {
         type: String,
@@ -60,6 +59,10 @@ const authSchema = new mongoose.Schema({
     profilePicture: {
         type: String,
         default: ""
+    },
+    verificationExpiresAt: {
+        type: Date,
+        index: { expires: '10m' } // Automatically delete unverified records after 10 minutes
     }
 });
 

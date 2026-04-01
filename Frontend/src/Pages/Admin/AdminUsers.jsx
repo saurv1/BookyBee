@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../Components/Dashboard/DashboardLayout';
 import { Trash2, Users as UsersIcon, Search } from 'lucide-react';
 import { APIAuthenticated } from '../../http';
+import DeleteConfirmation from '../DeleteConfirmation';
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [user, setUser] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -31,17 +35,27 @@ const AdminUsers = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this user?")) {
-            try {
-                const res = await APIAuthenticated.delete(`/auth/delete/${id}`);
-                if (res.data.success) {
-                    setUsers(users.filter(u => u._id !== id));
-                    alert("User deleted successfully");
-                }
-            } catch (error) {
-                alert(error.response?.data?.message || "Failed to delete user");
+    const confirmDelete = (id) => {
+        setUserToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!userToDelete) return;
+        
+        try {
+            setDeleteLoading(true);
+            const res = await APIAuthenticated.delete(`/auth/delete/${userToDelete}`);
+            if (res.data.success) {
+                setUsers(users.filter(u => u._id !== userToDelete));
+                setIsDeleteModalOpen(false);
+                setUserToDelete(null);
+                // Optional: show a small toast instead of a blocking alert
             }
+        } catch (error) {
+            alert(error.response?.data?.message || "Failed to delete user");
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -132,7 +146,7 @@ const AdminUsers = () => {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
-                                                    onClick={() => handleDelete(u._id)}
+                                                    onClick={() => confirmDelete(u._id)}
                                                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                                                     title="Delete Customer"
                                                 >
@@ -147,6 +161,15 @@ const AdminUsers = () => {
                     </div>
                 </div>
             </div>
+
+            <DeleteConfirmation 
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+                loading={deleteLoading}
+                title="Delete Customer"
+                message="Are you sure you want to delete this customer? This will remove all their account data and access to BookyBee services permanently."
+            />
         </DashboardLayout>
     );
 };

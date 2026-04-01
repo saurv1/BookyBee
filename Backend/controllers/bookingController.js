@@ -101,7 +101,8 @@ const getAdminStats = async (req, res) => {
         ]);
 
         const completedBookings = allBookings.filter(b => b.status === 'Completed');
-        const totalRevenue = completedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        const totalTransactions = completedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        const totalRevenue = totalTransactions * 0.1; // 10% Commission as platform revenue
 
         // Simple growth tracking
         const now = new Date();
@@ -184,7 +185,8 @@ const getAdminAnalytics = async (req, res) => {
                 const d = new Date(b.createdAt);
                 return d.getMonth() === index && d.getFullYear() === currentYear;
             });
-            const revenue = monthlyBookings.filter(b => b.status === 'Completed').reduce((ss, b) => ss + (b.amount || 0), 0);
+            const transactions = monthlyBookings.filter(b => b.status === 'Completed').reduce((ss, b) => ss + (b.amount || 0), 0);
+            const revenue = transactions * 0.1; // 10% Commission
             return { name, bookings: monthlyBookings.length, revenue };
         });
 
@@ -210,7 +212,7 @@ const getAdminAnalytics = async (req, res) => {
             const cat = b.provider?.serviceCategory || 'Uncategorized';
             if (!categoryStats[cat]) categoryStats[cat] = { bookings: 0, revenue: 0 };
             categoryStats[cat].bookings++;
-            if (b.status === 'Completed') categoryStats[cat].revenue += (b.amount || 0);
+            if (b.status === 'Completed') categoryStats[cat].revenue += (b.amount || 0) * 0.1; // 10% Commission
         });
 
         const categoryData = Object.keys(categoryStats).map(cat => ({

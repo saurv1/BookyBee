@@ -2,12 +2,16 @@ import React, { useState, useEffect } from 'react';
 import DashboardLayout from '../../Components/Dashboard/DashboardLayout';
 import { Trash2, Briefcase, Search, Star, MapPin } from 'lucide-react';
 import { APIAuthenticated } from '../../http';
+import DeleteConfirmation from '../DeleteConfirmation';
 
 const AdminProviders = () => {
     const [providers, setProviders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [user, setUser] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [providerToDelete, setProviderToDelete] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
 
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem('user'));
@@ -31,17 +35,26 @@ const AdminProviders = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this provider?")) {
-            try {
-                const res = await APIAuthenticated.delete(`/auth/delete/${id}`);
-                if (res.data.success) {
-                    setProviders(providers.filter(u => u._id !== id));
-                    alert("Provider deleted successfully");
-                }
-            } catch (error) {
-                alert(error.response?.data?.message || "Failed to delete provider");
+    const confirmDelete = (id) => {
+        setProviderToDelete(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleDelete = async () => {
+        if (!providerToDelete) return;
+
+        try {
+            setDeleteLoading(true);
+            const res = await APIAuthenticated.delete(`/auth/delete/${providerToDelete}`);
+            if (res.data.success) {
+                setProviders(providers.filter(u => u._id !== providerToDelete));
+                setIsDeleteModalOpen(false);
+                setProviderToDelete(null);
             }
+        } catch (error) {
+            alert(error.response?.data?.message || "Failed to delete provider");
+        } finally {
+            setDeleteLoading(false);
         }
     };
 
@@ -141,7 +154,7 @@ const AdminProviders = () => {
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
-                                                    onClick={() => handleDelete(p._id)}
+                                                    onClick={() => confirmDelete(p._id)}
                                                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                                                     title="Delete Provider"
                                                 >
@@ -156,6 +169,15 @@ const AdminProviders = () => {
                     </div>
                 </div>
             </div>
+
+            <DeleteConfirmation 
+                isOpen={isDeleteModalOpen}
+                onClose={() => setIsDeleteModalOpen(false)}
+                onConfirm={handleDelete}
+                loading={deleteLoading}
+                title="Delete Service Provider"
+                message="Are you sure you want to delete this service professional? Their profile and all associated data will be permanently removed from the system."
+            />
         </DashboardLayout>
     );
 };
