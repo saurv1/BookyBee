@@ -178,8 +178,8 @@ const Home = () => {
           <div className="hidden md:block absolute top-25 left-[15%] right-[15%] h-0.5 border-t-2 border-dashed border-yellow-200 z-0"></div>
 
           {/* Step 1 */}
-          <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 z-10 group">
-            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:rotate-6 transition-transform">1</div>
+          <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 z-10 group">
+            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200">1</div>
             <h3 className="text-2xl font-bold text-gray-900">Search & Select</h3>
             <p className="text-gray-500 leading-relaxed text-sm">Browse services, filter by price, rating and location. View detailed profiles of top-rated providers.</p>
             <div className="flex space-x-2 mt-4">
@@ -190,8 +190,8 @@ const Home = () => {
           </div>
 
           {/* Step 2 */}
-          <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 z-10 group">
-            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:-rotate-6 transition-transform">2</div>
+          <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 z-10 group">
+            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200">2</div>
             <h3 className="text-2xl font-bold text-gray-900">Chat & Book</h3>
             <p className="text-gray-500 leading-relaxed text-sm">Message providers directly, get instant quotes and book your preferred time slot with confirmation.</p>
             <div className="flex space-x-2 mt-4">
@@ -202,8 +202,8 @@ const Home = () => {
           </div>
 
           {/* Step 3 */}
-          <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 z-10 group">
-            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200 group-hover:rotate-6 transition-transform">3</div>
+          <div className="bg-white p-10 rounded-[40px] shadow-sm border border-gray-100 flex flex-col items-center text-center space-y-6 z-10 group">
+            <div className="w-20 h-20 bg-[#FFB800] text-white rounded-3xl flex items-center justify-center text-3xl font-black shadow-lg shadow-yellow-200">3</div>
             <h3 className="text-2xl font-bold text-gray-900">Pay & Rate</h3>
             <p className="text-gray-500 leading-relaxed text-sm">Secure payment options, rate your experience and help others find the best service providers.</p>
             <div className="flex space-x-2 mt-4">
