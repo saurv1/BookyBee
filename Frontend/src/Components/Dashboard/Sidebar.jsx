@@ -57,6 +57,7 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('loginTime');
         window.location.href = '/';
     };
 
@@ -107,7 +108,7 @@ const Sidebar = ({ role, userName, hasUnreadMessages, profilePicture }) => {
                 <Link to="/profile" className="flex items-center space-x-3 mb-4 p-2 hover:bg-gray-100/50 rounded-xl transition-colors group">
                     <div className="w-10 h-10 rounded-xl bg-yellow-100 flex items-center justify-center text-yellow-700 font-bold uppercase transition-all group-hover:scale-105 border border-white shadow-sm overflow-hidden">
                         {profilePicture ? (
-                            <img src={`http://localhost:3005/uploads/${profilePicture}`} alt="" className="w-full h-full object-cover" />
+                            <img src={`${import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:3005'}/uploads/${profilePicture}`} alt="" className="w-full h-full object-cover" />
                         ) : (
                             userName?.charAt(0) || 'U'
                         )}

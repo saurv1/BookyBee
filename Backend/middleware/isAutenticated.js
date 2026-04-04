@@ -17,7 +17,7 @@ const isAutenticated = async (req, res, next) => {
     }
 
     try {
-        const decode = jwt.verify(token, "helloworld");
+        const decode = jwt.verify(token, process.env.JWT_SECRET);
         const doesUserExist = await authModel.findById(decode.id);
 
         //email,password,role, username

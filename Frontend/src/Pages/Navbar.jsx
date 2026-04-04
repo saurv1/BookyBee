@@ -18,6 +18,7 @@ const Navbar = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('loginTime');
     setIsLogged(false);
     navigate('/');
     setIsOpen(false);

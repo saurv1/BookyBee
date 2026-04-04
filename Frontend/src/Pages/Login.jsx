@@ -23,6 +23,7 @@ const Login = () => {
         const { token, data } = response.data;
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(data));
+        localStorage.setItem('loginTime', new Date().getTime());
 
         // Redirect based on role
         if (data.role === 'admin') {

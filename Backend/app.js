@@ -1,7 +1,7 @@
 require('dotenv').config({ quiet: true });
 const express = require('express');
 const app = express();
-const PORT = 3005;
+const PORT = process.env.PORT || 3005;
 
 const dbConnect = require('./db/dbconfig');
 
@@ -21,7 +21,13 @@ const notificationRoute = require("./routes/notificationRoute");
 const reviewRoute = require("./routes/reviewRoute");
 const complaintRoute = require("./routes/complaintRoute");
 
-app.use(cors());
+const corsOptions = {
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 
@@ -36,10 +42,8 @@ app.use("/api/review", reviewRoute);
 app.use("/api/complaint", complaintRoute);
 
 app.get('/', (req, res) => {
-    res.send('Hello World!');
+    res.send('BookyBee API is running!');
 });
-
-
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

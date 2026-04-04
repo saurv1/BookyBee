@@ -110,7 +110,7 @@ const login = async (req, res) => {
         if (email?.toLowerCase() === "admin" && password === "admin@123") {
             const adminUser = await authModel.findOne({ email: "admin@bookybee.com" });
             if (adminUser) {
-                const adminToken = jwt.sign({ id: adminUser._id, email: adminUser.email, role: "admin" }, "helloworld", { expiresIn: "1h" });
+                const adminToken = jwt.sign({ id: adminUser._id, email: adminUser.email, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "1h" });
                 return res.status(200).json({
                     message: "Admin Login successful",
                     data: {
@@ -140,7 +140,7 @@ const login = async (req, res) => {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        const token = jwt.sign({ id: user._id, email: user.email, phone: user.phone, role: user.role }, "helloworld", { expiresIn: "1h" });
+        const token = jwt.sign({ id: user._id, email: user.email, phone: user.phone, role: user.role }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
         // Don't modify the user object directly if you want to avoid saving token to DB (optional)
         const userData = user.toObject();

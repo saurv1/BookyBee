@@ -220,7 +220,7 @@ const Profile = () => {
                                         </div>
                                     ) : imagePreview || user.profilePicture ? (
                                         <img
-                                            src={imagePreview || `http://localhost:3005/uploads/${user.profilePicture}`}
+                                            src={imagePreview || `${import.meta.env.VITE_API_URL?.replace('/api','') || 'http://localhost:3005'}/uploads/${user.profilePicture}`}
                                             alt="Profile"
                                             className="w-full h-full object-cover"
                                         />

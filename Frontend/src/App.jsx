@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import Home from './Pages/Home';
 import Login from './Pages/Login';
 import Register from './Pages/Register';
@@ -43,6 +44,33 @@ import Invoice from './Pages/Invoice';
 
 const AppContent = () => {
     const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const checkAutoLogout = () => {
+            const loginTime = localStorage.getItem('loginTime');
+            const token = localStorage.getItem('token');
+            if (token && loginTime) {
+                const currentTime = new Date().getTime();
+                const sessionDuration = currentTime - parseInt(loginTime);
+                const oneHour = 3600000; // 1 hour in ms
+
+                if (sessionDuration > oneHour) {
+                    // Logout the user
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('loginTime');
+                    navigate('/login');
+                }
+            }
+        };
+
+        checkAutoLogout();
+        // Also check every minute in case they stay on the same page
+        const interval = setInterval(checkAutoLogout, 60000); 
+        return () => clearInterval(interval);
+    }, [location, navigate]);
+
     const isDashboard = location.pathname.includes('dashboard') ||
         location.pathname.includes('service-provider') ||
         location.pathname.startsWith('/admin') ||
