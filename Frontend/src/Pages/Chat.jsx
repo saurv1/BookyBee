@@ -15,9 +15,9 @@ const Chat = () => {
     const messagesEndRef = useRef(null);
     const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('user')));
 
-    // const scrollToTop = () => {
-    //     // No longer needed to scroll to bottom as new messages are at top
-    // };
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     useEffect(() => {
         if (!currentUser) {
@@ -36,6 +36,10 @@ const Chat = () => {
         return () => clearInterval(interval);
     }, [receiverId]);
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     const markMessagesAsRead = async () => {
         try {
             await APIAuthenticated.put('/notification/read-type/chat');
@@ -44,11 +48,8 @@ const Chat = () => {
         }
     };
 
-    // useEffect(scrollToBottom, [messages]);
-
     const fetchReceiverDetails = async () => {
         try {
-            // Need a way to get user details by ID
             const res = await APIAuthenticated.get(`/auth/user/${receiverId}`);
             if (res.data.success) {
                 setReceiver(res.data.user);
@@ -148,22 +149,25 @@ const Chat = () => {
                                 </div>
                             </div>
                         ) : (
-                            [...messages].reverse().map((msg, idx) => (
-                                <div
-                                    key={msg._id || idx}
-                                    className={`flex ${msg.sender === currentUser._id ? 'justify-end' : 'justify-start'}`}
-                                >
-                                    <div className={`max-w-[70%] p-4 rounded-3xl text-sm font-medium shadow-sm ${msg.sender === currentUser._id
-                                        ? 'bg-[#FFB800] text-white rounded-br-none'
-                                        : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
-                                        }`}>
-                                        <p>{msg.message}</p>
-                                        <p className={`text-[10px] mt-1.5 ${msg.sender === currentUser._id ? 'text-white/70' : 'text-gray-400'}`}>
-                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </p>
+                            <>
+                                {messages.map((msg, idx) => (
+                                    <div
+                                        key={msg._id || idx}
+                                        className={`flex ${msg.sender === currentUser._id ? 'justify-end' : 'justify-start'}`}
+                                    >
+                                        <div className={`max-w-[70%] p-4 rounded-3xl text-sm font-medium shadow-sm ${msg.sender === currentUser._id
+                                            ? 'bg-[#FFB800] text-white rounded-br-none'
+                                            : 'bg-white text-gray-800 rounded-bl-none border border-gray-100'
+                                            }`}>
+                                            <p>{msg.message}</p>
+                                            <p className={`text-[10px] mt-1.5 ${msg.sender === currentUser._id ? 'text-white/70' : 'text-gray-400'}`}>
+                                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            ))
+                                ))}
+                                <div ref={messagesEndRef} />
+                            </>
                         )}
                     </div>
 

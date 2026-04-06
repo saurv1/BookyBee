@@ -171,7 +171,6 @@ const forgotPassword = async (req, res) => {
         const otp = Math.floor(1000 + Math.random() * 9000).toString();
 
         user.otp = otp;
-        user.isPasswordResetVerified = false;
         await user.save();
 
         await sendEmail({
@@ -228,9 +227,8 @@ const verifyOtp = async (req, res) => {
             message: "Invalid otp"
         })
     } else {
-        // dispose the otp so cannot be used next time the same otp
-        user.otp = undefined
-        user.isPasswordResetVerified = true
+        // use the otp field to track that it was verified for reset
+        user.otp = "verified"
         await user.save()
         res.status(200).json({
             message: "Otp is correct"
@@ -252,21 +250,21 @@ const resetPassword = async (req, res) => {
         })
     }
 
-    const user = await authModel.findOne({ email }).select("+isPasswordResetVerified")
+    const user = await authModel.findOne({ email }).select("+otp +isOtpVerified")
     if (!user) {
         return res.status(404).json({
             message: "User email not registered"
         })
     }
 
-    if (user.isPasswordResetVerified != true) {
+    if (user.otp !== "verified") {
         return res.status(403).json({
             message: "You cannot perform this action"
         })
     }
 
     user.password = bcrypt.hashSync(newPassword, 10)
-    user.isPasswordResetVerified = false;
+    user.otp = undefined;
     await user.save()
 
     res.status(200).json({

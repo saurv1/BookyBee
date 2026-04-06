@@ -17,6 +17,10 @@ const messageSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+messageSchema.index({ sender: 1, receiver: 1 });
+messageSchema.index({ receiver: 1, sender: 1 });
+messageSchema.index({ createdAt: -1 });
+
 const messageModel = mongoose.model('message', messageSchema);
 
 module.exports = messageModel;

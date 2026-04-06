@@ -51,6 +51,11 @@ const transactionSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+transactionSchema.index({ booking_id: 1 });
+transactionSchema.index({ status: 1 });
+transactionSchema.index({ "customerDetails.email": 1 });
+transactionSchema.index({ createdAt: -1 });
+
 const Transaction = mongoose.model("Transaction", transactionSchema);
 
 module.exports = Transaction;

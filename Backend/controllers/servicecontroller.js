@@ -33,7 +33,7 @@ exports.createService = createService;
 
 const getAllServices = async (req, res) => {
     try {
-        const services = await jobModel.find().populate("UserId", "firstName lastName email");
+        const services = await jobModel.find().populate("UserId", "firstName lastName email").lean();
 
         return res.status(200).json({
             message: "Services fetched successfully",
@@ -161,57 +161,65 @@ exports.deleteService = deleteService;
 
 const getAdminServices = async (req, res) => {
     try {
-        const [allProviders, allBookings] = await Promise.all([
-            authModel.find({ role: 'provider' }),
-            bookingModel.find()
+        const [servicesData, activeBookingStats, completedRevenueStats] = await Promise.all([
+            authModel.aggregate([
+                { $match: { role: 'provider' } },
+                {
+                    $group: {
+                        _id: "$serviceCategory",
+                        providerCount: { $sum: 1 }
+                    }
+                }
+            ]),
+            bookingModel.aggregate([
+                { $match: { status: { $in: ['Pending', 'Confirmed'] } } },
+                { $group: { _id: "$service", activeCount: { $sum: 1 } } }
+            ]),
+            bookingModel.aggregate([
+                { $match: { status: 'Completed' } },
+                { $group: { _id: "$service", revenue: { $sum: "$amount" }, totalCount: { $sum: 1 } } }
+            ])
         ]);
 
-        // Aggregate unique service categories from providers
         const servicesMap = {};
 
-        allProviders.forEach(provider => {
-            const category = provider.serviceCategory || 'Other';
-            if (!servicesMap[category]) {
-                servicesMap[category] = {
-                    name: category,
-                    providerCount: 0,
-                    bookingCount: 0,
-                    activeBookings: 0,
-                    revenue: 0
-                };
-            }
-            servicesMap[category].providerCount++;
+        // Merge stats
+        servicesData.forEach(item => {
+            const name = item._id || 'Other';
+            servicesMap[name] = {
+                name,
+                providerCount: item.providerCount,
+                bookingCount: 0,
+                activeBookings: 0,
+                revenue: 0
+            };
         });
 
-        // Map bookings to services
-        allBookings.forEach(booking => {
-            const category = booking.service || 'Other';
-            if (servicesMap[category]) {
-                servicesMap[category].bookingCount++;
-                if (booking.status === 'Pending' || booking.status === 'Confirmed') {
-                    servicesMap[category].activeBookings++;
-                }
-                if (booking.status === 'Completed') {
-                    servicesMap[category].revenue += (booking.amount || 0);
-                }
+        activeBookingStats.forEach(item => {
+            const name = item._id || 'Other';
+            if (servicesMap[name]) {
+                servicesMap[name].activeBookings = item.activeCount;
+                servicesMap[name].bookingCount += item.activeCount;
             } else {
-                // Handle cases where booking exists for a service but no providers are currently registered for it
-                // (Though unlikely with current schema, good for robustness)
-                servicesMap[category] = {
-                    name: category,
-                    providerCount: 0,
-                    bookingCount: 1,
-                    activeBookings: (booking.status === 'Pending' || booking.status === 'Confirmed') ? 1 : 0,
-                    revenue: booking.status === 'Completed' ? (booking.amount || 0) : 0
-                };
+                servicesMap[name] = { name, providerCount: 0, bookingCount: item.activeCount, activeBookings: item.activeCount, revenue: 0 };
             }
         });
 
-        const servicesData = Object.values(servicesMap).sort((a, b) => b.providerCount - a.providerCount);
+        completedRevenueStats.forEach(item => {
+            const name = item._id || 'Other';
+            if (servicesMap[name]) {
+                servicesMap[name].revenue = item.revenue;
+                servicesMap[name].bookingCount += item.totalCount;
+            } else {
+                servicesMap[name] = { name, providerCount: 0, bookingCount: item.totalCount, activeBookings: 0, revenue: item.revenue };
+            }
+        });
+
+        const servicesResult = Object.values(servicesMap).sort((a, b) => b.providerCount - a.providerCount);
 
         return res.status(200).json({
             success: true,
-            data: servicesData
+            data: servicesResult
         });
 
     } catch (error) {
@@ -226,30 +234,42 @@ const getServicesByCategory = async (req, res) => {
         const normalizedCategory = category.replace(/[\s-]/g, '[\\s-]');
         const categoryRegex = new RegExp(normalizedCategory, 'i');
 
-        // 1. Get explicit service listings
-        const servicesListing = await jobModel.find({
-            service: { $regex: categoryRegex }
-        }).populate("UserId", "firstName lastName email phone address serviceCategory price isAvailable");
+        // 1. Get explicit service listings and providers in parallel
+        const [servicesListing, providersByProfile] = await Promise.all([
+            jobModel.find({ service: { $regex: categoryRegex } })
+                .populate("UserId", "firstName lastName email phone address serviceCategory price isAvailable")
+                .lean(),
+            authModel.find({
+                role: 'provider',
+                serviceCategory: { $regex: categoryRegex }
+            }).lean()
+        ]);
 
-        // 2. Get providers who registered with this category in their profile
-        const providersByProfile = await authModel.find({
-            role: 'provider',
-            serviceCategory: { $regex: categoryRegex }
-        });
+        // Get all unique provider IDs involved
+        const providerIds = [
+            ...new Set([
+                ...servicesListing.map(s => s.UserId?._id.toString()).filter(Boolean),
+                ...providersByProfile.map(p => p._id.toString())
+            ])
+        ];
+
+        // Fetch ratings for all providers in one aggregate query
+        const ratingStatsData = await bookingModel.aggregate([
+            { $match: { provider: { $in: providerIds.map(id => new mongoose.Types.ObjectId(id)) }, rating: { $exists: true } } },
+            { $group: { _id: "$provider", avgRating: { $avg: "$rating" }, totalCount: { $sum: 1 } } }
+        ]);
+
+        const ratingsMap = {};
+        ratingStatsData.forEach(item => { ratingsMap[item._id.toString()] = { avg: item.avgRating, count: item.totalCount }; });
 
         // Combine them into a uniform format
         const combined = new Map();
 
-        // Add listings first (they have more detail like location)
+        // Add listings first
         for (const s of servicesListing) {
             if (s.UserId) {
                 const providerId = s.UserId._id.toString();
-
-                // Fetch bookings to calculate rating
-                const bookings = await bookingModel.find({ provider: providerId, rating: { $exists: true } });
-                const avgRating = bookings.length > 0
-                    ? bookings.reduce((sum, b) => sum + b.rating, 0) / bookings.length
-                    : 0;
+                const r = ratingsMap[providerId] || { avg: 0, count: 0 };
 
                 combined.set(providerId, {
                     _id: s._id,
@@ -258,8 +278,26 @@ const getServicesByCategory = async (req, res) => {
                     location: s.location,
                     price: s.price,
                     UserId: s.UserId,
-                    rating: parseFloat(avgRating.toFixed(1)),
-                    reviewCount: bookings.length
+                    rating: parseFloat(r.avg.toFixed(1)),
+                    reviewCount: r.count
+                });
+            }
+        }
+
+        // Add providers from authModel if not already added
+        for (const p of providersByProfile) {
+            const providerId = p._id.toString();
+            if (!combined.has(providerId)) {
+                const r = ratingsMap[providerId] || { avg: 0, count: 0 };
+                combined.set(providerId, {
+                    _id: p._id,
+                    service: p.serviceCategory,
+                    description: "Professional " + p.serviceCategory + " services.",
+                    location: p.address || "Location not specified",
+                    price: p.price,
+                    UserId: p,
+                    rating: parseFloat(r.avg.toFixed(1)),
+                    reviewCount: r.count
                 });
             }
         }

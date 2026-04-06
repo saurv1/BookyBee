@@ -55,25 +55,46 @@ const getChatList = async (req, res) => {
     try {
         const myId = req.user._id;
 
-        // Find all unique users I have chatted with
-        const messages = await messageModel.find({
-            $or: [{ sender: myId }, { receiver: myId }]
-        }).populate('sender receiver', 'firstName lastName firstName lastName');
+        const messageStats = await messageModel.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { sender: myId },
+                        { receiver: myId }
+                    ]
+                }
+            },
+            { $sort: { createdAt: -1 } },
+            {
+                $group: {
+                    _id: {
+                        $cond: [
+                            { $gt: ["$sender", "$receiver"] },
+                            { u1: "$sender", u2: "$receiver" },
+                            { u1: "$receiver", u2: "$sender" }
+                        ]
+                    },
+                    lastMessage: { $first: "$message" },
+                    timestamp: { $first: "$createdAt" },
+                    senderId: { $first: "$sender" },
+                    receiverId: { $first: "$receiver" }
+                }
+            }
+        ]);
 
-        const chatUsers = new Map();
-
-        messages.forEach(msg => {
-            const otherUser = msg.sender._id.toString() === myId.toString() ? msg.receiver : msg.sender;
-            chatUsers.set(otherUser._id.toString(), {
+        const chatUsers = await Promise.all(messageStats.map(async (stat) => {
+            const otherUserId = stat.senderId.toString() === myId.toString() ? stat.receiverId : stat.senderId;
+            const otherUser = await authModel.findById(otherUserId).select('firstName lastName').lean();
+            return {
                 _id: otherUser._id,
                 firstName: otherUser.firstName,
                 lastName: otherUser.lastName,
-                lastMessage: msg.message,
-                timestamp: msg.createdAt
-            });
-        });
+                lastMessage: stat.lastMessage,
+                timestamp: stat.timestamp
+            };
+        }));
 
-        res.status(200).json({ success: true, data: Array.from(chatUsers.values()) });
+        res.status(200).json({ success: true, data: chatUsers });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }

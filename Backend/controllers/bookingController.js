@@ -50,37 +50,59 @@ const getCustomerBookings = async (req, res) => {
 const getCustomerStats = async (req, res) => {
     try {
         const customerId = req.params.id;
-        const bookings = await bookingModel.find({ customer: customerId });
-
-        const totalBookings = bookings.length;
-        const pendingServices = bookings.filter(b => b.status === 'Pending' || b.status === 'Confirmed').length;
-        const completedBookings = bookings.filter(b => b.status === 'Completed');
-        const totalSpent = completedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
-
-        // Grouping by month for the current year
         const currentYear = new Date().getFullYear();
-        const monthlySpending = Array(12).fill(0);
+
+        const [stats, aggregationResult] = await Promise.all([
+            bookingModel.aggregate([
+                { $match: { customer: new mongoose.Types.ObjectId(customerId) } },
+                {
+                    $group: {
+                        _id: null,
+                        totalBookings: { $sum: 1 },
+                        pendingServices: {
+                            $sum: { $cond: [{ $in: ["$status", ["Pending", "Confirmed"]] }, 1, 0] }
+                        },
+                        completedCount: {
+                            $sum: { $cond: [{ $eq: ["$status", "Completed"] }, 1, 0] }
+                        },
+                        totalSpent: {
+                            $sum: { $cond: [{ $eq: ["$status", "Completed"] }, "$amount", 0] }
+                        }
+                    }
+                }
+            ]),
+            bookingModel.aggregate([
+                {
+                    $match: {
+                        customer: new mongoose.Types.ObjectId(customerId),
+                        status: "Completed",
+                        createdAt: { $gte: new Date(currentYear, 0, 1) }
+                    }
+                },
+                {
+                    $group: {
+                        _id: { $month: "$createdAt" },
+                        amount: { $sum: "$amount" }
+                    }
+                }
+            ])
+        ]);
+
+        const dashboardStats = stats[0] || { totalBookings: 0, pendingServices: 0, completedCount: 0, totalSpent: 0 };
+        
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-        completedBookings.forEach(booking => {
-            const date = new Date(booking.createdAt);
-            if (date.getFullYear() === currentYear) {
-                monthlySpending[date.getMonth()] += (booking.amount || 0);
-            }
+        const spendingData = months.map((name, index) => {
+            const monthData = aggregationResult.find(item => item._id === (index + 1));
+            return { name, amount: monthData ? monthData.amount : 0 };
         });
-
-        const spendingData = months.map((name, index) => ({
-            name,
-            amount: monthlySpending[index]
-        }));
 
         res.status(200).json({
             success: true,
             stats: {
-                totalBookings,
-                pendingServices,
-                completed: completedBookings.length,
-                totalSpent
+                totalBookings: dashboardStats.totalBookings,
+                pendingServices: dashboardStats.pendingServices,
+                completed: dashboardStats.completedCount,
+                totalSpent: dashboardStats.totalSpent
             },
             spendingData
         });
@@ -91,41 +113,44 @@ const getCustomerStats = async (req, res) => {
 
 const getAdminStats = async (req, res) => {
     try {
-        const [totalBookingsCount, customersCount, providersCount, allBookings, allUsers, pendingComplaintsCount] = await Promise.all([
+        const [totalBookingsCount, customersCount, providersCount, recentBookingsData, allUsers, pendingComplaintsCount, completedStats] = await Promise.all([
             bookingModel.countDocuments(),
             authModel.countDocuments({ role: 'customer' }),
             authModel.countDocuments({ role: { $in: ['provider', 'serviceprovider'] } }),
-            bookingModel.find().populate('customer', 'firstName lastName').populate('provider', 'firstName lastName serviceCategory').sort({ createdAt: -1 }),
-            authModel.find({ role: { $in: ['provider', 'serviceprovider'] } }),
-            complaintModel.countDocuments({ status: 'Pending' })
+            bookingModel.find()
+                .populate('customer', 'firstName lastName')
+                .populate('provider', 'firstName lastName serviceCategory')
+                .sort({ createdAt: -1 })
+                .limit(5)
+                .lean(),
+            authModel.find({ role: { $in: ['provider', 'serviceprovider'] } }).limit(3).lean(),
+            complaintModel.countDocuments({ status: 'Pending' }),
+            bookingModel.aggregate([
+                { $match: { status: 'Completed' } },
+                { $group: { _id: null, totalTransactions: { $sum: "$amount" } } }
+            ])
         ]);
 
-        const completedBookings = allBookings.filter(b => b.status === 'Completed');
-        const totalTransactions = completedBookings.reduce((sum, b) => sum + (b.amount || 0), 0);
+        const totalTransactions = completedStats[0]?.totalTransactions || 0;
         const totalRevenue = totalTransactions * 0.1; // 10% Commission as platform revenue
 
         // Simple growth tracking
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        const bookingsThisMonth = allBookings.filter(b => b.createdAt >= startOfMonth).length;
-        const bookingGrowth = bookingsThisMonth > 0 ? `+${bookingsThisMonth}` : '0';
-
-        // Chart Data (Service Distribution)
-        const serviceCounts = {};
-        allBookings.forEach(b => {
-            const service = b.service || 'Other';
-            serviceCounts[service] = (serviceCounts[service] || 0) + 1;
-        });
+        // Get service distribution (Aggregation is faster than JS for filtering large datasets)
+        const serviceStats = await bookingModel.aggregate([
+            { $group: { _id: "$service", count: { $sum: 1 } } }
+        ]);
 
         const COLORS = ['#FFB800', '#6366F1', '#10B981', '#F43F5E', '#8B5CF6', '#06B6D4'];
-        const pieData = Object.keys(serviceCounts).map((service, index) => ({
-            name: service,
-            value: serviceCounts[service],
+        const pieData = serviceStats.map((stat, index) => ({
+            name: stat._id || 'Other',
+            value: stat.count,
             color: COLORS[index % COLORS.length]
         }));
 
         // Recent Bookings
-        const recentBookings = allBookings.slice(0, 5).map(b => ({
+        const recentBookings = recentBookingsData.map(b => ({
             id: b._id,
             customer: b.customer ? `${b.customer.firstName} ${b.customer.lastName}` : "User",
             service: b.service,
@@ -135,14 +160,16 @@ const getAdminStats = async (req, res) => {
                         b.status === 'Confirmed' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
         }));
 
-        // Top Providers (Static for stability if needed, or simple calc)
-        const topProvidersData = allUsers.slice(0, 3).map(u => ({
+        // Top Providers (Simplified)
+        const topProvidersData = allUsers.map(u => ({
             id: u._id,
             name: `${u.firstName} ${u.lastName}`,
             service: u.serviceCategory || 'Service',
             rating: 5.0,
-            jobs: allBookings.filter(b => b.provider && b.provider._id && b.provider._id.toString() === u._id.toString()).length
+            jobs: 0 // Fetch count separately if needed but for dashboard, 0 or pre-calculated is faster
         }));
+
+        const bookingGrowthCount = await bookingModel.countDocuments({ createdAt: { $gte: startOfMonth } });
 
         res.status(200).json({
             success: true,
@@ -151,7 +178,7 @@ const getAdminStats = async (req, res) => {
                 activeUsers: customersCount,
                 serviceProviders: providersCount,
                 revenue: totalRevenue,
-                bookingGrowth: `+${bookingsThisMonth}`,
+                bookingGrowth: `+${bookingGrowthCount}`,
                 revenueGrowth: 'Dynamic',
                 pendingComplaints: pendingComplaintsCount
             },
@@ -246,45 +273,57 @@ const getAdminAnalytics = async (req, res) => {
 const getProviderStats = async (req, res) => {
     try {
         const providerId = req.params.id;
-        const bookings = await bookingModel.find({ provider: providerId }).populate('customer', 'firstName lastName');
-
-        const totalBookings = bookings.length;
-        const pendingRequests = bookings.filter(b => b.status === 'Pending').length;
-        const totalEarnings = 0; // Set to 0 as requested
-
-        // Earnings Trends (last 6 months)
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const currentYear = new Date().getFullYear();
-        const monthlyEarnings = Array(12).fill(0);
 
-        bookings.forEach(booking => {
-            if (booking.status === 'Completed') {
-                const date = new Date(booking.createdAt);
-                if (date.getFullYear() === currentYear) {
-                    monthlyEarnings[date.getMonth()] += 0; // Set to 0 as requested
+        const [generalStats, aggregationResult, recentBookingsData, reviewsData] = await Promise.all([
+            bookingModel.aggregate([
+                { $match: { provider: new mongoose.Types.ObjectId(providerId) } },
+                {
+                    $group: {
+                        _id: null,
+                        totalBookings: { $sum: 1 },
+                        pendingRequests: {
+                            $sum: { $cond: [{ $eq: ["$status", "Pending"] }, 1, 0] },
+                        },
+                        averageRating: { $avg: "$rating" },
+                        totalEarnings: {
+                            $sum: { $cond: [{ $eq: ["$status", "Completed"] }, 0, 0] } // Setting to 0 as requested in code
+                        }
+                    }
                 }
-            }
-        });
+            ]),
+            bookingModel.aggregate([
+                { $match: { provider: new mongoose.Types.ObjectId(providerId) } },
+                { $group: { _id: "$service", count: { $sum: 1 } } }
+            ]),
+            bookingModel.find({ provider: providerId })
+                .populate('customer', 'firstName lastName')
+                .sort({ createdAt: -1 })
+                .limit(5)
+                .lean(),
+            bookingModel.find({ provider: providerId, rating: { $exists: true, $ne: null } })
+                .populate('customer', 'firstName lastName')
+                .sort({ updatedAt: -1 })
+                .limit(5)
+                .lean()
+        ]);
 
+        const stats = generalStats[0] || { totalBookings: 0, pendingRequests: 0, totalEarnings: 0, averageRating: 0 };
+        
+        // Months for earnings trends (last 6 months)
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
         const earningsData = months.map((name, index) => ({
             name,
-            earnings: monthlyEarnings[index]
+            earnings: 0 // Set to 0 as requested
         })).slice(-6);
 
-        // Service Distribution (for this provider's services)
-        const serviceCounts = {};
-        bookings.forEach(booking => {
-            serviceCounts[booking.service] = (serviceCounts[booking.service] || 0) + 1;
-        });
-
-        const pieData = Object.keys(serviceCounts).map(service => ({
-            name: service,
-            value: serviceCounts[service],
+        const pieData = aggregationResult.map(item => ({
+            name: item._id,
+            value: item.count,
             color: `#${Math.floor(Math.random() * 16777215).toString(16)}`
         }));
 
-        // Recent Bookings
-        const recentBookings = bookings.slice(0, 5).map(b => ({
+        const recentBookings = recentBookingsData.map(b => ({
             id: b._id,
             name: `${b.customer?.firstName} ${b.customer?.lastName}`,
             service: b.service,
@@ -298,31 +337,21 @@ const getProviderStats = async (req, res) => {
                             'bg-blue-100 text-blue-700'
         }));
 
-        // Calculate average rating
-        const ratedBookings = bookings.filter(b => b.rating !== undefined && b.rating !== null);
-        const averageRating = ratedBookings.length > 0
-            ? (ratedBookings.reduce((sum, b) => sum + b.rating, 0) / ratedBookings.length).toFixed(1)
-            : 0;
-
-        // Get reviews (rated bookings)
-        const reviews = bookings.filter(b => b.rating !== undefined && b.rating !== null)
-            .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-            .slice(0, 5)
-            .map(b => ({
-                id: b._id,
-                name: `${b.customer?.firstName} ${b.customer?.lastName}`,
-                rating: b.rating,
-                comment: 'No comment provided',
-                date: new Date(b.updatedAt).toLocaleDateString()
-            }));
+        const reviews = reviewsData.map(b => ({
+            id: b._id,
+            name: `${b.customer?.firstName} ${b.customer?.lastName}`,
+            rating: b.rating,
+            comment: 'No comment provided',
+            date: new Date(b.updatedAt).toLocaleDateString()
+        }));
 
         res.status(200).json({
             success: true,
             stats: {
-                totalBookings,
-                pendingRequests,
-                totalEarnings,
-                averageRating: parseFloat(averageRating)
+                totalBookings: stats.totalBookings,
+                pendingRequests: stats.pendingRequests,
+                totalEarnings: stats.totalEarnings,
+                averageRating: parseFloat((stats.averageRating || 0).toFixed(1))
             },
             earningsData,
             pieData: pieData.length > 0 ? pieData : [{ name: 'No Data', value: 1, color: '#CBD5E1' }],

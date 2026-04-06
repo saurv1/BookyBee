@@ -52,11 +52,6 @@ const authSchema = new mongoose.Schema({
         default: false,
         select: false
     },
-    isPasswordResetVerified: {
-        type: Boolean,
-        default: false,
-        select: false
-    },
     isAvailable: {
         type: Boolean,
         default: true

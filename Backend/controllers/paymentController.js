@@ -364,7 +364,7 @@ const getTransactionsByCustomer = async (req, res) => {
         const transactions = await Transaction.find({
             "customerDetails.email": email,
             status: "COMPLETED"
-        }).sort({ createdAt: -1 });
+        }).sort({ createdAt: -1 }).lean();
 
         return res.status(200).json({
             success: true,
@@ -382,7 +382,7 @@ const getTransactionsByCustomer = async (req, res) => {
 
 const getAllTransactions = async (req, res) => {
     try {
-        const transactions = await Transaction.find({ status: "COMPLETED" }).sort({ createdAt: -1 });
+        const transactions = await Transaction.find({ status: "COMPLETED" }).sort({ createdAt: -1 }).lean();
         return res.status(200).json({
             success: true,
             transactions,
