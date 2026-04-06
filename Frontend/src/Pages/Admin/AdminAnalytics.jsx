@@ -51,10 +51,6 @@ const AdminAnalytics = () => {
                         <h1 className="text-3xl font-black text-gray-900 tracking-tight">Platform Analytics</h1>
                         <p className="text-gray-500 mt-1 font-medium italic">Deep insights into BookyBee ecosystem behavior.</p>
                     </div>
-                    <button className="flex items-center space-x-2 px-6 py-3 bg-gray-900 text-white rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
-                        <Download className="w-4 h-4" />
-                        <span>Export Report</span>
-                    </button>
                 </div>
 
                 {/* Summary Cards */}

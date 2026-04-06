@@ -120,25 +120,47 @@ const CustomerPayments = () => {
                                                 <p className="text-xs text-gray-400 font-bold uppercase mb-1">Total Amount</p>
                                                 <div className="text-2xl font-black text-[#FFB800]">Rs {payment.amount}</div>
                                             </div>
-                                            {payment.status === 'COMPLETED' && (payment.booking_id || (payment.product_id && payment.product_id.includes('-'))) && (
+                                            {payment.status === 'COMPLETED' ? (
+                                                (payment.booking_id || (payment.product_id && payment.product_id.includes('-'))) && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            const bId = payment.booking_id || (payment.product_id?.includes('-') ? payment.product_id.split('-')[1] : null);
+                                                            if (bId) {
+                                                                navigate(`/invoice/${bId}`);
+                                                            } else {
+                                                                alert("Could not identify the booking associated with this payment.");
+                                                            }
+                                                        }}
+                                                        className="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-[#FFB800] transition-all shadow-lg active:scale-95 flex items-center space-x-2 whitespace-nowrap"
+                                                    >
+                                                        <FileText className="w-4 h-4" />
+                                                        <span>View Invoice</span>
+                                                    </button>
+                                                )
+                                            ) : payment.status === 'PENDING' ? (
                                                 <button
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        const bId = payment.booking_id || (payment.product_id?.includes('-') ? payment.product_id.split('-')[1] : null);
-                                                        console.log("Navigating to invoice for booking:", bId);
-                                                        if (bId) {
-                                                            navigate(`/invoice/${bId}`);
-                                                        } else {
-                                                            alert("Could not identify the booking associated with this payment.");
-                                                        }
+                                                        // Construct a basic booking object for the payment form
+                                                        const booking = {
+                                                            _id: payment.booking_id,
+                                                            amount: payment.amount,
+                                                            service: payment.product_name,
+                                                            // We might not have date/time here, but PaymentForm uses them for display
+                                                            date: new Date(payment.createdAt).toLocaleDateString(),
+                                                            time: new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                        };
+                                                        navigate('/payment-form', { state: { booking } });
                                                     }}
-                                                    className="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-[#FFB800] transition-all shadow-lg active:scale-95 flex items-center space-x-2 whitespace-nowrap"
+                                                    className="px-6 py-2.5 rounded-xl bg-[#FFB800] text-white font-bold text-sm hover:bg-yellow-600 transition-all shadow-lg active:scale-95 flex items-center space-x-2 whitespace-nowrap animate-pulse"
                                                 >
-                                                    <FileText className="w-4 h-4" />
-                                                    <span>View Invoice</span>
+                                                    <CreditCard className="w-4 h-4" />
+                                                    <span>Pay Rs {payment.amount}</span>
                                                 </button>
-                                            )}
+                                            ) : null}
                                         </div>
                                     </div>
                                 </div>

@@ -363,7 +363,7 @@ const getTransactionsByCustomer = async (req, res) => {
 
         const transactions = await Transaction.find({
             "customerDetails.email": email,
-            status: "COMPLETED"
+            status: { $in: ["COMPLETED", "PENDING"] }
         }).sort({ createdAt: -1 }).lean();
 
         return res.status(200).json({
