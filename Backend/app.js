@@ -1,7 +1,9 @@
 require('dotenv').config({ quiet: true });
 const express = require('express');
+const mongoose = require('mongoose');
 const app = express();
 const PORT = process.env.PORT || 3005;
+const IS_VERCEL = process.env.VERCEL === '1';
 
 const dbConnect = require('./db/dbconfig');
 
@@ -42,11 +44,28 @@ app.use("/api/review", reviewRoute);
 app.use("/api/complaint", complaintRoute);
 
 app.get('/', (req, res) => {
-    res.send('BookyBee API is running!');
+    res.json({
+        message: 'BookyBee API is running!',
+        environment: IS_VERCEL ? 'production/vercel' : 'development',
+        dbStatus: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+// Global error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled Server Error:', err);
+    res.status(500).json({
+        success: false,
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong on the server'
+    });
 });
+
+// Only listen if not in a Vercel-like serverless environment
+if (!IS_VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
 
 module.exports = app;
