@@ -341,7 +341,7 @@ const ProviderDetails = () => {
                                                 value={bookingDetails.message}
                                                 onChange={handleInputChange}
                                                 placeholder="Ask a question or provide details about the job..."
-                                                className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all font-medium text-sm min-h-[100px] resize-none"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all font-medium text-sm min-h-25 resize-none"
                                             ></textarea>
                                         </div>
 

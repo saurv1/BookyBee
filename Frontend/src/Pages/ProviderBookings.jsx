@@ -115,7 +115,7 @@ const ProviderBookings = () => {
                             placeholder="Search by service or customer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-white border border-gray-100 rounded-2xl pl-11 pr-4 py-3 min-w-[300px] focus:outline-none focus:border-yellow-200 shadow-sm transition-all text-sm font-medium"
+                            className="bg-white border border-gray-100 rounded-2xl pl-11 pr-4 py-3 min-w-75 focus:outline-none focus:border-yellow-200 shadow-sm transition-all text-sm font-medium"
                         />
                     </div>
                 </div>

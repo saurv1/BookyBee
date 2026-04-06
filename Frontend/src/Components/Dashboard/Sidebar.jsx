@@ -12,7 +12,6 @@ import {
     Clock,
     MessageSquare,
     LogOut,
-    LogOut,
     AlertCircle,
     X
 } from 'lucide-react';
