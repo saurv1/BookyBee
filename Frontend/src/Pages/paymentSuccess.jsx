@@ -28,8 +28,24 @@ const PaymentSuccess = () => {
             }
 
             // Get params from URL (payment gateways redirect with these)
-            const pidx = searchParams.get('pidx') || pendingPayment.pidx;
-            const product_id = searchParams.get('purchase_order_id') || pendingPayment.product_id;
+            let pidx = searchParams.get('pidx') || searchParams.get('transaction_id');
+            let product_id = searchParams.get('purchase_order_id') || searchParams.get('oid') || searchParams.get('transaction_uuid');
+
+            // Handle eSewa v2 'data' parameter (Base64 encoded JSON)
+            const dataParam = searchParams.get('data');
+            if (dataParam) {
+                try {
+                    const decodedData = JSON.parse(atob(dataParam));
+                    if (decodedData.transaction_uuid) product_id = decodedData.transaction_uuid;
+                    if (decodedData.transaction_id) pidx = decodedData.transaction_id;
+                } catch (e) {
+                    console.error("Error decoding eSewa data:", e);
+                }
+            }
+
+            // Fallback to localStorage if URL params are missing
+            pidx = pidx || pendingPayment.pidx;
+            product_id = product_id || pendingPayment.product_id;
 
             const res = await API.post('/payment/payment-status', {
                 product_id,

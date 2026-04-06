@@ -62,10 +62,12 @@ const initiatePayment = async (req, res) => {
             payment_gateway: paymentGateway,
         };
 
+        const frontendOrigin = req.headers.origin || process.env.FRONTEND_URL || "http://localhost:5173";
+        
         let paymentConfig;
         if (paymentGateway === "esewa") {
-            const SUCCESS_URL = process.env.SUCCESS_URL || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success`;
-            const FAILURE_URL = process.env.FAILURE_URL || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/failure`;
+            const SUCCESS_URL = `${frontendOrigin}/payment/success`;
+            const FAILURE_URL = `${frontendOrigin}/payment/failure`;
 
             const paymentData = {
                 amount,
@@ -93,8 +95,8 @@ const initiatePayment = async (req, res) => {
             paymentConfig = {
                 url: process.env.KHALTI_PAYMENT_URL,
                 data: {
-                    return_url: process.env.SUCCESS_URL || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success`,
-                    website_url: process.env.FRONTEND_URL || "http://localhost:5173",
+                    return_url: `${frontendOrigin}/payment/success`,
+                    website_url: frontendOrigin,
                     amount: amount * 100, // Convert to paisa
                     purchase_order_id: productId,
                     purchase_order_name: productName || booking.service,
