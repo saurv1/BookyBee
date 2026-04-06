@@ -15,8 +15,8 @@ const paymentRoute = require("./routes/paymentRoute");
 
 const cors = require('cors');
 
-// Connect to the database
-dbConnect();
+// Initial DB connection attempt
+dbConnect().catch(err => console.log('Initial DB connect attempt failed:', err.message));
 
 const messageRoute = require("./routes/messageRoute");
 const notificationRoute = require("./routes/notificationRoute");
@@ -31,6 +31,18 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Database connection middleware
+app.use(async (req, res, next) => {
+    try {
+        await dbConnect();
+        next();
+    } catch (err) {
+        console.error("Database connection middleware error:", err.message);
+        res.status(500).json({ success: false, message: "Database connection failed" });
+    }
+});
+
 app.use('/uploads', express.static('uploads'));
 
 app.use("/api/auth", authRoute)
@@ -44,10 +56,11 @@ app.use("/api/review", reviewRoute);
 app.use("/api/complaint", complaintRoute);
 
 app.get('/', (req, res) => {
+    const states = ['disconnected', 'connected', 'connecting', 'disconnecting'];
     res.json({
         message: 'BookyBee API is running!',
         environment: IS_VERCEL ? 'production/vercel' : 'development',
-        dbStatus: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+        dbStatus: states[mongoose.connection.readyState] || 'unknown'
     });
 });
 
