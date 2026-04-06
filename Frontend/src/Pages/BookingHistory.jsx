@@ -172,7 +172,7 @@ const BookingHistory = () => {
                         <span>Invoice</span>
                       </button>
                     )}
-                    {(!booking.paymentStatus || booking.paymentStatus === 'UNPAID' || booking.paymentStatus === 'FAILED') && booking.status !== 'Rejected' && booking.status !== 'Cancelled' && (
+                    {booking.paymentStatus !== 'COMPLETED' && booking.paymentStatus?.toUpperCase() !== 'COMPLETED' && booking.status !== 'Rejected' && booking.status !== 'Cancelled' && (
                       <button
                         onClick={() => navigate('/payment', { state: { booking } })}
                         className="px-6 py-3 rounded-2xl bg-[#FFB800] text-white font-bold hover:bg-yellow-500 transition-all shadow-lg shadow-yellow-100 flex items-center space-x-2"

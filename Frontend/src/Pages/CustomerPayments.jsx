@@ -45,8 +45,9 @@ const CustomerPayments = () => {
 
     const filteredPayments = payments.filter(payment => {
         const searchStr = searchTerm.toLowerCase();
-        return payment.product_name?.toLowerCase().includes(searchStr) ||
-            payment.product_id?.toLowerCase().includes(searchStr);
+        return (payment.product_name?.toLowerCase().includes(searchStr) ||
+            payment.product_id?.toLowerCase().includes(searchStr)) &&
+            payment.status === 'COMPLETED';
     });
 
     return (

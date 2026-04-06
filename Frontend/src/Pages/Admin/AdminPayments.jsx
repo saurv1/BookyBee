@@ -41,8 +41,8 @@ const AdminPayments = () => {
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800">Total Revenue</h1>
-                        <p className="text-gray-500 mt-1">Monitor all securely completed payments across BookyBee.</p>
+                        <h1 className="text-3xl font-bold text-gray-800">Revenue Management</h1>
+                        <p className="text-gray-500 mt-1">BookyBee commission (10%) and completed transaction history.</p>
                     </div>
 
                     <div className="relative">
@@ -64,12 +64,12 @@ const AdminPayments = () => {
                             <CreditCard className="w-32 h-32" />
                         </div>
                         <div className="relative z-10">
-                            <p className="text-purple-200 font-bold uppercase tracking-wider mb-2 text-sm">Gross Volume</p>
+                            <p className="text-purple-200 font-bold uppercase tracking-wider mb-2 text-sm">Gross Volume (10% Commission)</p>
                             <h2 className="text-5xl font-black text-white tracking-tight">
-                                Rs {totalRevenue.toLocaleString()}
+                                Rs {(totalRevenue * 0.1).toLocaleString()}
                             </h2>
                             <p className="text-purple-100 mt-4 font-medium flex items-center">
-                                Total realized revenue generated via {payments.length} verified transactions.
+                                Estimated platform revenue from {payments.length} verified transactions totaling Rs {totalRevenue.toLocaleString()}.
                             </p>
                         </div>
                     </div>
@@ -78,7 +78,7 @@ const AdminPayments = () => {
                 {/* Payments List */}
                 <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden p-6 md:p-8">
                     <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-                        Completed Transaction Ledgers <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-black uppercase tracking-wider">{filteredPayments.length} Total</span>
+                        Completed Transactions <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-black uppercase tracking-wider">{filteredPayments.length} Total</span>
                     </h3>
 
                     <div className="space-y-4">

@@ -1,6 +1,7 @@
 const jobModel = require('../model/serviceModel');
 const authModel = require('../model/authModel');
 const bookingModel = require('../model/bookingModel');
+const Review = require('../model/reviewModel');
 const mongoose = require('mongoose');
 
 const createService = async (req, res) => {
@@ -75,9 +76,15 @@ const getSingleService = async (req, res) => {
             return res.status(404).json({ message: "Service not found" });
         }
 
+        const providerId = service.UserId._id || service.UserId;
+        const reviews = await Review.find({ targetId: providerId })
+            .populate("reviewerId", "firstName lastName")
+            .sort({ createdAt: -1 });
+
         return res.status(200).json({
             message: "Service fetched successfully",
-            data: service
+            data: service,
+            reviews: reviews
         });
 
     } catch (error) {
@@ -238,7 +245,7 @@ const getServicesByCategory = async (req, res) => {
         // 1. Get explicit service listings and providers in parallel
         const [servicesListing, providersByProfile] = await Promise.all([
             jobModel.find({ service: { $regex: categoryRegex } })
-                .populate("UserId", "firstName lastName email phone address serviceCategory price isAvailable")
+                .populate("UserId", "firstName lastName email phone address district serviceCategory price isAvailable")
                 .lean(),
             authModel.find({
                 role: 'provider',
@@ -281,7 +288,8 @@ const getServicesByCategory = async (req, res) => {
                     _id: s._id,
                     service: s.service,
                     description: s.description,
-                    location: s.location,
+                    location: s.location || s.UserId.address,
+                    district: s.UserId.district,
                     price: s.price,
                     UserId: s.UserId,
                     rating: parseFloat(r.avg.toFixed(1)),
@@ -300,6 +308,7 @@ const getServicesByCategory = async (req, res) => {
                     service: p.serviceCategory,
                     description: "Professional " + p.serviceCategory + " services.",
                     location: p.address || "Location not specified",
+                    district: p.district,
                     price: p.price,
                     UserId: {
                         _id: p._id,
@@ -308,6 +317,7 @@ const getServicesByCategory = async (req, res) => {
                         email: p.email,
                         phone: p.phone,
                         address: p.address,
+                        district: p.district,
                         isAvailable: p.isAvailable
                     },
                     rating: parseFloat(r.avg.toFixed(1)),

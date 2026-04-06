@@ -93,16 +93,7 @@ const AdminReviews = () => {
                                 : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
                             }`}
                     >
-                        All
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('provider')}
-                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'provider'
-                                ? 'bg-yellow-500 text-white shadow-lg'
-                                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
-                            }`}
-                    >
-                        Provider Reviews (by Customers)
+                        All Reviews
                     </button>
                     <button
                         onClick={() => setActiveTab('customer')}
@@ -111,7 +102,16 @@ const AdminReviews = () => {
                                 : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
                             }`}
                     >
-                        Customer Reviews (by Providers)
+                        Reviews by Customers
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('provider')}
+                        className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all whitespace-nowrap ${activeTab === 'provider'
+                                ? 'bg-yellow-500 text-white shadow-lg'
+                                : 'bg-white text-gray-500 hover:bg-gray-50 border border-gray-100'
+                            }`}
+                    >
+                        Reviews by Providers
                     </button>
                 </div>
 
@@ -134,7 +134,7 @@ const AdminReviews = () => {
                                                 ))}
                                             </div>
                                             <span className="text-[10px] px-2.5 py-1 uppercase tracking-wider font-black rounded-full bg-yellow-100 text-yellow-700">
-                                                {review.role === 'provider' ? 'Provider Rating' : 'Customer Rating'}
+                                                {review.role === 'customer' ? 'Customer to Provider' : 'Provider to Customer'}
                                             </span>
                                         </div>
                                         {review.feedback ? (

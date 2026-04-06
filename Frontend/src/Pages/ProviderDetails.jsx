@@ -13,6 +13,7 @@ const ProviderDetails = () => {
     const [error, setError] = useState(null);
     const [bookingSuccess, setBookingSuccess] = useState(false);
     const [createdBooking, setCreatedBooking] = useState(null);
+    const [reviews, setReviews] = useState([]);
 
     const [bookingDetails, setBookingDetails] = useState({
         date: '',
@@ -27,11 +28,10 @@ const ProviderDetails = () => {
     const fetchProvider = async () => {
         try {
             setLoading(true);
-            // We need a route to fetch single provider details or use existing service route
-            // For now let's assume getSingleService gives provider info via UserId populate
             const res = await API.get(`/service/getservice/${providerId}`);
             if (res.data.data) {
                 setProvider(res.data.data);
+                setReviews(res.data.reviews || []);
             }
         } catch (err) {
             console.error("Error fetching provider:", err);
@@ -107,6 +107,9 @@ const ProviderDetails = () => {
     );
 
     const isAvailable = provider?.UserId?.isAvailable ?? true;
+    const averageRating = reviews.length > 0 
+        ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
+        : 'New';
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -122,8 +125,9 @@ const ProviderDetails = () => {
                     </button>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Provider Info */}
+                        {/* Left Column: Provider Info & Reviews */}
                         <div className="lg:col-span-2 space-y-8">
+                            {/* Provider Info Card */}
                             <div className="bg-white rounded-4xl p-8 border border-gray-100 shadow-sm">
                                 <div className="flex items-center space-x-6 mb-8">
                                     <div className="w-24 h-24 rounded-3xl bg-yellow-50 flex items-center justify-center text-3xl font-bold text-[#FFB800]">
@@ -138,9 +142,17 @@ const ProviderDetails = () => {
                                         </div>
                                         <p className="text-[#FFB800] font-bold mt-1 text-lg">{provider?.service}</p>
                                         <div className="flex items-center space-x-2 mt-2">
-                                            <div className="flex items-center text-yellow-400">
-                                                <Star className="w-4 h-4 fill-current" />
-                                                <span className="ml-1 text-gray-900 font-bold">New Expert</span>
+                                            <div className="flex items-center text-[#FFB800]">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star 
+                                                        key={i} 
+                                                        className={`w-4 h-4 ${i < (reviews.length > 0 ? Math.round(reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length) : 0) ? 'fill-current' : 'text-gray-300'}`} 
+                                                    />
+                                                ))}
+                                                <span className="ml-2 text-gray-900 font-bold">
+                                                    {averageRating === 'New' ? 'New Expert' : averageRating}
+                                                </span>
+                                                <span className="ml-1 text-gray-400 text-sm font-medium">({reviews.length} reviews)</span>
                                             </div>
                                         </div>
                                     </div>
@@ -194,9 +206,60 @@ const ProviderDetails = () => {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Reviews Card */}
+                            <div className="bg-white rounded-4xl p-8 border border-gray-100 shadow-sm space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-black text-gray-900">Customer Reviews</h3>
+                                    <div className="flex items-center space-x-2 bg-yellow-50 px-4 py-2 rounded-xl">
+                                        <Star className="w-5 h-5 text-[#FFB800] fill-current" />
+                                        <span className="text-lg font-black text-gray-900">
+                                            {averageRating === 'New' ? '5.0' : averageRating}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {reviews.length > 0 ? (
+                                    <div className="space-y-6">
+                                        {reviews.map((review) => (
+                                            <div key={review._id} className="p-6 rounded-3xl bg-gray-50 border border-gray-100 hover:border-yellow-200 transition-all">
+                                                <div className="flex justify-between items-start mb-4">
+                                                    <div className="flex space-x-3">
+                                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 font-bold border border-gray-100">
+                                                            {review.reviewerId?.firstName?.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-bold text-gray-900">{review.reviewerId?.firstName} {review.reviewerId?.lastName}</p>
+                                                            <div className="flex space-x-0.5 mt-0.5">
+                                                                {[...Array(5)].map((_, i) => (
+                                                                    <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}`} />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span className="text-xs text-gray-400 font-medium">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                                </div>
+                                                {review.feedback && (
+                                                    <p className="text-gray-600 text-sm italic py-2 leading-relaxed">"{review.feedback}"</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="py-12 text-center space-y-4">
+                                        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto text-gray-300">
+                                            <Star className="w-8 h-8" />
+                                        </div>
+                                        <div>
+                                            <p className="text-gray-900 font-bold">No Reviews Yet</p>
+                                            <p className="text-gray-400 text-sm">This provider hasn't received any feedback yet.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        {/* Booking Section */}
+                        {/* Right Column: Booking Widget */}
                         <div className="lg:col-span-1">
                             {bookingSuccess ? (
                                 <div className="bg-white rounded-4xl p-8 border border-green-100 shadow-xl text-center space-y-5">
@@ -278,7 +341,7 @@ const ProviderDetails = () => {
                                                 value={bookingDetails.message}
                                                 onChange={handleInputChange}
                                                 placeholder="Ask a question or provide details about the job..."
-                                                className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all font-medium text-sm min-h-25 resize-none"
+                                                className="w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all font-medium text-sm min-h-[100px] resize-none"
                                             ></textarea>
                                         </div>
 

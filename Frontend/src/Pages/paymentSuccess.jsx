@@ -48,6 +48,16 @@ const PaymentSuccess = () => {
                 }
                 // Clean up
                 localStorage.removeItem('pendingPayment');
+
+                // Auto redirect after 3 seconds
+                setTimeout(() => {
+                    navigate('/rating-feedback', { 
+                        state: { 
+                            booking: pendingPayment.booking, 
+                            role: 'customer' 
+                        } 
+                    });
+                }, 3000);
             } else {
                 setError('Payment verification failed. Please contact support.');
             }

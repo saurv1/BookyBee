@@ -26,7 +26,9 @@ const RatingFeedback = () => {
     }
 
     const targetUser = role === 'provider' ? booking.customer : booking.provider;
-    const reviewerId = role === 'provider' ? booking.provider?._id || booking.provider : booking.customer?._id || booking.customer;
+    const targetId = targetUser?._id || targetUser;
+    const reviewerRaw = role === 'provider' ? booking.provider : booking.customer;
+    const reviewerId = reviewerRaw?._id || reviewerRaw;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -40,7 +42,7 @@ const RatingFeedback = () => {
             const res = await APIAuthenticated.post('/review/add', {
                 bookingId: booking._id,
                 reviewerId: reviewerId,
-                targetId: targetUser?._id,
+                targetId: targetId,
                 role: role,
                 rating: rating,
                 feedback: feedback

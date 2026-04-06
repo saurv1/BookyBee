@@ -18,8 +18,35 @@ const CategoryProviders = () => {
         try {
             setLoading(true);
             const res = await API.get(`/service/getservicesbycategory/${categoryName}`);
+            
             if (res.data.data) {
-                setProviders(res.data.data);
+                const user = JSON.parse(localStorage.getItem('user'));
+                const userDistrict = user?.district || "";
+                const userAddress = user?.address || "";
+                
+                let sortedProviders = [...res.data.data];
+
+                if (userDistrict || userAddress) {
+                    sortedProviders.sort((a, b) => {
+                        // Priority 1: Exact district match
+                        const aDistrictMatch = userDistrict && (a.district?.toLowerCase() === userDistrict.toLowerCase() || a.UserId?.district?.toLowerCase() === userDistrict.toLowerCase());
+                        const bDistrictMatch = userDistrict && (b.district?.toLowerCase() === userDistrict.toLowerCase() || b.UserId?.district?.toLowerCase() === userDistrict.toLowerCase());
+                        
+                        if (aDistrictMatch && !bDistrictMatch) return -1;
+                        if (!aDistrictMatch && bDistrictMatch) return 1;
+
+                        // Priority 2: Address includes customer's address string
+                        const aAddressMatch = userAddress && (a.location?.toLowerCase().includes(userAddress.toLowerCase()) || a.UserId?.address?.toLowerCase().includes(userAddress.toLowerCase()));
+                        const bAddressMatch = userAddress && (b.location?.toLowerCase().includes(userAddress.toLowerCase()) || b.UserId?.address?.toLowerCase().includes(userAddress.toLowerCase()));
+                        
+                        if (aAddressMatch && !bAddressMatch) return -1;
+                        if (!aAddressMatch && bAddressMatch) return 1;
+
+                        return 0;
+                    });
+                }
+                
+                setProviders(sortedProviders);
             }
         } catch (err) {
             console.error("Error fetching providers:", err);

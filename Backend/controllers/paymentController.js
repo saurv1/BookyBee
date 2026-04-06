@@ -64,14 +64,17 @@ const initiatePayment = async (req, res) => {
 
         let paymentConfig;
         if (paymentGateway === "esewa") {
+            const SUCCESS_URL = process.env.SUCCESS_URL || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success`;
+            const FAILURE_URL = process.env.FAILURE_URL || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/failure`;
+
             const paymentData = {
                 amount,
-                failure_url: process.env.FAILURE_URL,
+                failure_url: FAILURE_URL,
                 product_delivery_charge: "0",
                 product_service_charge: "0",
                 product_code: process.env.ESEWA_MERCHANT_ID,
                 signed_field_names: "total_amount,transaction_uuid,product_code",
-                success_url: process.env.SUCCESS_URL,
+                success_url: SUCCESS_URL,
                 tax_amount: "0",
                 total_amount: amount,
                 transaction_uuid: productId,
@@ -90,7 +93,7 @@ const initiatePayment = async (req, res) => {
             paymentConfig = {
                 url: process.env.KHALTI_PAYMENT_URL,
                 data: {
-                    return_url: process.env.SUCCESS_URL,
+                    return_url: process.env.SUCCESS_URL || `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success`,
                     website_url: process.env.FRONTEND_URL || "http://localhost:5173",
                     amount: amount * 100, // Convert to paisa
                     purchase_order_id: productId,
@@ -363,7 +366,7 @@ const getTransactionsByCustomer = async (req, res) => {
 
         const transactions = await Transaction.find({
             "customerDetails.email": email,
-            status: { $in: ["COMPLETED", "PENDING"] }
+            status: "COMPLETED"
         }).sort({ createdAt: -1 }).lean();
 
         return res.status(200).json({
