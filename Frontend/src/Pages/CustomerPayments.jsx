@@ -59,14 +59,14 @@ const CustomerPayments = () => {
                         <p className="text-gray-500 mt-1">View and track all your transactions.</p>
                     </div>
 
-                    <div className="relative">
+                    <div className="relative w-full md:w-auto">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input
                             type="text"
-                            placeholder="Search by service or transaction ID..."
+                            placeholder="Search..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-white border border-gray-100 rounded-2xl pl-11 pr-4 py-3 min-w-75 focus:outline-none focus:border-yellow-200 shadow-sm transition-all text-sm"
+                            className="bg-white border border-gray-100 rounded-2xl pl-11 pr-4 py-3 w-full md:min-w-80 focus:outline-none focus:border-yellow-200 shadow-sm transition-all text-sm"
                         />
                     </div>
                 </div>
@@ -114,12 +114,13 @@ const CustomerPayments = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between lg:justify-end lg:space-x-8 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-50">
-                                        <div className="text-right flex items-center space-x-4">
-                                            <div>
-                                                <p className="text-xs text-gray-400 font-bold uppercase mb-1">Total Amount</p>
-                                                <div className="text-2xl font-black text-[#FFB800]">Rs {payment.amount}</div>
-                                            </div>
+                                    <div className="flex flex-col sm:flex-row items-center justify-between lg:justify-end lg:space-x-8 pt-6 lg:pt-0 border-t lg:border-t-0 border-gray-50 gap-6">
+                                        <div className="text-center sm:text-right w-full sm:w-auto">
+                                            <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase mb-1">Total Amount</p>
+                                            <div className="text-xl md:text-2xl font-black text-[#FFB800]">Rs {payment.amount}</div>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
                                             {payment.status === 'COMPLETED' ? (
                                                 (payment.booking_id || (payment.product_id && payment.product_id.includes('-'))) && (
                                                     <button
@@ -133,10 +134,10 @@ const CustomerPayments = () => {
                                                                 alert("Could not identify the booking associated with this payment.");
                                                             }
                                                         }}
-                                                        className="px-6 py-2.5 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-[#FFB800] transition-all shadow-lg active:scale-95 flex items-center space-x-2 whitespace-nowrap"
+                                                        className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-[#FFB800] transition-all shadow-lg active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap"
                                                     >
                                                         <FileText className="w-4 h-4" />
-                                                        <span>View Invoice</span>
+                                                        <span>Invoice</span>
                                                     </button>
                                                 )
                                             ) : payment.status === 'PENDING' ? (
@@ -144,21 +145,19 @@ const CustomerPayments = () => {
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         e.stopPropagation();
-                                                        // Construct a basic booking object for the payment form
                                                         const booking = {
                                                             _id: payment.booking_id,
                                                             amount: payment.amount,
                                                             service: payment.product_name,
-                                                            // We might not have date/time here, but PaymentForm uses them for display
                                                             date: new Date(payment.createdAt).toLocaleDateString(),
                                                             time: new Date(payment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                         };
-                                                        navigate('/payment-form', { state: { booking } });
+                                                        navigate('/payment', { state: { booking } });
                                                     }}
-                                                    className="px-6 py-2.5 rounded-xl bg-[#FFB800] text-white font-bold text-sm hover:bg-yellow-600 transition-all shadow-lg active:scale-95 flex items-center space-x-2 whitespace-nowrap animate-pulse"
+                                                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-[#FFB800] text-white font-bold text-sm hover:bg-yellow-600 transition-all shadow-lg active:scale-95 flex items-center justify-center space-x-2 whitespace-nowrap animate-pulse"
                                                 >
                                                     <CreditCard className="w-4 h-4" />
-                                                    <span>Pay Rs {payment.amount}</span>
+                                                    <span>Pay Now</span>
                                                 </button>
                                             ) : null}
                                         </div>

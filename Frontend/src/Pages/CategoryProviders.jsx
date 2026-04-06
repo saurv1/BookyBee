@@ -30,34 +30,34 @@ const CategoryProviders = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-32 pb-20 px-6">
+        <div className="min-h-screen bg-gray-50 pt-24 md:pt-32 pb-10 md:pb-20 px-4 md:px-6">
             <div className="max-w-7xl mx-auto">
                 <button
                     onClick={() => navigate('/services')}
-                    className="flex items-center space-x-2 text-gray-500 hover:text-[#FFB800] transition-colors mb-8 font-semibold"
+                    className="flex items-center space-x-2 text-gray-500 hover:text-[#FFB800] transition-colors mb-6 md:mb-8 font-semibold"
                 >
                     <ArrowLeft className="w-5 h-5" />
-                    <span>Back to Services</span>
+                    <span className="text-sm md:text-base">Back to Services</span>
                 </button>
 
-                <div className="mb-12">
-                    <h1 className="text-4xl font-extrabold text-[#111827] mb-2">{categoryName} Experts</h1>
-                    <p className="text-gray-500">Find the best professionals for your {categoryName.toLowerCase()} needs.</p>
+                <div className="mb-8 md:mb-12">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-[#111827] mb-2">{categoryName} Experts</h1>
+                    <p className="text-sm md:text-base text-gray-500">Find the best professionals for your {categoryName.toLowerCase()} needs.</p>
                 </div>
 
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20">
-                        <Loader2 className="w-12 h-12 text-[#FFB800] animate-spin mb-4" />
-                        <p className="text-gray-500 font-medium">Finding experts for you...</p>
+                    <div className="flex flex-col items-center justify-center py-10 md:py-20">
+                        <Loader2 className="w-10 h-10 md:w-12 md:h-12 text-[#FFB800] animate-spin mb-4" />
+                        <p className="text-gray-400 font-medium">Finding experts for you...</p>
                     </div>
                 ) : error ? (
-                    <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-2xl text-center">
+                    <div className="bg-red-50 border border-red-100 text-red-600 p-6 rounded-2xl text-center shadow-lg">
                         {error}
                     </div>
                 ) : providers.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                         {providers.map((item) => (
-                            <div key={item._id} className="bg-white rounded-4xl p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
+                            <div key={item._id} className="bg-white rounded-3xl md:rounded-4xl p-6 md:p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
                                 <div className="flex items-start justify-between mb-6">
                                     <div className="flex items-center space-x-4">
                                         <div className="w-16 h-16 rounded-2xl bg-yellow-50 flex items-center justify-center text-2xl font-bold text-[#FFB800] group-hover:scale-110 transition-transform">
@@ -94,13 +94,13 @@ const CategoryProviders = () => {
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                                    <div className="text-[#FFB800] font-black text-xl">
+                                <div className="flex flex-col sm:flex-row items-center justify-between pt-6 border-t border-gray-50 gap-4">
+                                    <div className="text-[#FFB800] font-black text-2xl">
                                         Rs {item.price}<span className="text-xs text-gray-400 font-bold">/hr</span>
                                     </div>
                                     <button
                                         onClick={() => navigate(`/provider-details/${item._id}`)}
-                                        className="bg-[#111827] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#FFB800] transition-colors shadow-lg shadow-gray-100"
+                                        className="w-full sm:w-auto bg-[#111827] text-white px-8 py-3.5 rounded-xl font-bold hover:bg-[#FFB800] transition-all shadow-lg active:scale-95"
                                     >
                                         Book Now
                                     </button>

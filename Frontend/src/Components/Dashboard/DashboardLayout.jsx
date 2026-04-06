@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import { Search, Bell, X, Check } from 'lucide-react';
+import { Search, Bell, X, Check, Menu } from 'lucide-react';
 import { APIAuthenticated } from '../../http';
 
 const DashboardLayout = ({ children }) => {
@@ -10,6 +10,7 @@ const DashboardLayout = ({ children }) => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showToast, setShowToast] = useState(null);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const user = JSON.parse(localStorage.getItem('user')) || {};
     const { role, firstName: userName, profilePicture } = user;
@@ -74,20 +75,35 @@ const DashboardLayout = ({ children }) => {
     const hasUnreadMessages = notifications.some(n => !n.isRead && n.type === 'chat');
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
-            <Sidebar role={role} userName={userName} hasUnreadMessages={hasUnreadMessages} profilePicture={profilePicture} />
+        <div className="min-h-screen bg-[#F8FAFC] flex overflow-hidden">
+            <Sidebar 
+                role={role} 
+                userName={userName} 
+                hasUnreadMessages={hasUnreadMessages} 
+                profilePicture={profilePicture} 
+                isOpen={isSidebarOpen} 
+                setIsOpen={setIsSidebarOpen} 
+            />
 
-            <div className="pl-64 flex flex-col min-h-screen">
+            <div className="flex-1 flex flex-col min-h-screen w-full lg:pl-64 transition-all duration-300">
                 {/* Top Header */}
-                <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-40">
-                    <div className="flex-1 max-w-xl">
-                        <div className="relative group">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-yellow-500 transition-colors" />
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all text-sm"
-                            />
+                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 md:px-8 sticky top-0 z-40">
+                    <div className="flex items-center space-x-4 flex-1">
+                        <button 
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="lg:hidden p-2 hover:bg-gray-50 rounded-xl transition-colors"
+                        >
+                            <Menu className="w-6 h-6 text-gray-600" />
+                        </button>
+                        <div className="hidden md:block flex-1 max-w-xl">
+                            <div className="relative group">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-yellow-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-transparent rounded-xl focus:bg-white focus:border-yellow-200 focus:outline-none transition-all text-sm"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -163,7 +179,7 @@ const DashboardLayout = ({ children }) => {
                 )}
 
                 {/* Page Content */}
-                <main className="flex-1 p-8">
+                <main className="flex-1 p-4 md:p-8">
                     {children}
                 </main>
             </div>

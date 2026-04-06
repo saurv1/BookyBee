@@ -1,6 +1,7 @@
 const jobModel = require('../model/serviceModel');
 const authModel = require('../model/authModel');
 const bookingModel = require('../model/bookingModel');
+const mongoose = require('mongoose');
 
 const createService = async (req, res) => {
     try {
@@ -260,12 +261,17 @@ const getServicesByCategory = async (req, res) => {
         ]);
 
         const ratingsMap = {};
-        ratingStatsData.forEach(item => { ratingsMap[item._id.toString()] = { avg: item.avgRating, count: item.totalCount }; });
+        ratingStatsData.forEach(item => {
+            ratingsMap[item._id.toString()] = {
+                avg: item.avgRating || 0,
+                count: item.totalCount || 0
+            };
+        });
 
         // Combine them into a uniform format
         const combined = new Map();
 
-        // Add listings first
+        // Add service listings first
         for (const s of servicesListing) {
             if (s.UserId) {
                 const providerId = s.UserId._id.toString();
@@ -284,36 +290,13 @@ const getServicesByCategory = async (req, res) => {
             }
         }
 
-        // Add providers from authModel if not already added
+        // Add providers from authModel who don't have a specific service listing yet
         for (const p of providersByProfile) {
             const providerId = p._id.toString();
             if (!combined.has(providerId)) {
                 const r = ratingsMap[providerId] || { avg: 0, count: 0 };
                 combined.set(providerId, {
-                    _id: p._id,
-                    service: p.serviceCategory,
-                    description: "Professional " + p.serviceCategory + " services.",
-                    location: p.address || "Location not specified",
-                    price: p.price,
-                    UserId: p,
-                    rating: parseFloat(r.avg.toFixed(1)),
-                    reviewCount: r.count
-                });
-            }
-        }
-
-        // Add providers from authModel if not already added
-        for (const p of providersByProfile) {
-            const providerId = p._id.toString();
-            if (!combined.has(providerId)) {
-                // Fetch bookings to calculate rating
-                const bookings = await bookingModel.find({ provider: providerId, rating: { $exists: true } });
-                const avgRating = bookings.length > 0
-                    ? bookings.reduce((sum, b) => sum + b.rating, 0) / bookings.length
-                    : 0;
-
-                combined.set(providerId, {
-                    _id: p._id, // Use user ID as listing ID if no listing exists
+                    _id: p._id, // Use user ID as ID if no listing exists
                     service: p.serviceCategory,
                     description: "Professional " + p.serviceCategory + " services.",
                     location: p.address || "Location not specified",
@@ -327,8 +310,8 @@ const getServicesByCategory = async (req, res) => {
                         address: p.address,
                         isAvailable: p.isAvailable
                     },
-                    rating: parseFloat(avgRating.toFixed(1)),
-                    reviewCount: bookings.length
+                    rating: parseFloat(r.avg.toFixed(1)),
+                    reviewCount: r.count
                 });
             }
         }
@@ -338,6 +321,7 @@ const getServicesByCategory = async (req, res) => {
             data: Array.from(combined.values())
         });
     } catch (error) {
+        console.error("Error in getServicesByCategory:", error);
         return res.status(500).json({ message: "Something went wrong", error: error.message });
     }
 }

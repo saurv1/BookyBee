@@ -60,9 +60,9 @@ const Home = () => {
             <span className="text-sm font-semibold text-green-700">Trusted by customers</span>
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight">
-            Your Everyday <br />
-            <span className="text-[#FFB800]">Chores Made</span> <br />
+          <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight">
+            Your Everyday <br className="hidden sm:block" />
+            <span className="text-[#FFB800]">Chores Made</span> <br className="hidden sm:block" />
             Simple
           </h1>
 
@@ -70,35 +70,41 @@ const Home = () => {
             Book trusted service providers for all your household needs. From cleaning to repairs, find the perfect expert near you in minutes.
           </p>
 
-          <form onSubmit={handleSearch} className="relative max-w-md">
+          <form onSubmit={handleSearch} className="relative max-w-md w-full">
             <input
               type="text"
               placeholder="What service do you need?"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-32 py-4 rounded-2xl border border-gray-200 shadow-sm focus:ring-2 focus:ring-yellow-400 focus:border-transparent outline-none transition-all"
+              className="w-full pl-12 pr-4 sm:pr-32 py-4 rounded-2xl border border-gray-200 shadow-lg focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all placeholder:text-gray-400"
             />
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">
               🔍
             </div>
             <button 
               type="submit"
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#FFB800] text-white px-8 py-2.5 rounded-xl font-bold hover:bg-yellow-500 transition-colors"
+              className="hidden sm:block absolute right-2 top-1/2 -translate-y-1/2 bg-[#FFB800] text-white px-8 py-2.5 rounded-xl font-bold hover:bg-yellow-500 transition-all active:scale-95 shadow-lg shadow-yellow-100"
             >
               Search
             </button>
+            <button 
+              type="submit"
+              className="sm:hidden mt-3 w-full bg-[#FFB800] text-white py-4 rounded-2xl font-bold shadow-lg shadow-yellow-100"
+            >
+              Find Experts
+            </button>
           </form>
 
-          <div className="flex items-center space-x-12 pt-4">
+          <div className="flex flex-wrap items-center gap-6 md:gap-12 pt-4">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600 shadow-sm">🛡️</div>
+              <div className="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-sm border border-yellow-100">🛡️</div>
               <div>
                 <p className="font-bold text-gray-900 leading-tight">Verified Experts</p>
                 <p className="text-xs text-gray-500">Background checked</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center text-yellow-600 shadow-sm">⭐</div>
+              <div className="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center text-yellow-600 shadow-sm border border-yellow-100">⭐</div>
               <div>
                 <p className="font-bold text-gray-900 leading-tight">Top Rated</p>
                 <p className="text-xs text-gray-500">4.8+ average rating</p>
@@ -138,14 +144,14 @@ const Home = () => {
           <p className="text-gray-500 max-w-xl mx-auto">Everything you need for your home, all in one place</p>
         </div>
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 px-4">
           {services.map((service, idx) => (
-            <div key={idx} className={`${service.color} p-8 rounded-4xl group hover:shadow-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-white/50 relative overflow-hidden`}>
-              <div className={`w-14 h-14 ${service.iconBg} rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform ${service.iconColor}`}>
+            <div key={idx} className={`${service.color} p-6 md:p-8 rounded-3xl md:rounded-4xl group hover:shadow-xl transition-all duration-300 cursor-pointer border border-transparent hover:border-white/50 relative overflow-hidden`}>
+              <div className={`w-12 h-12 md:w-14 md:h-14 ${service.iconBg} rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6 shadow-sm group-hover:scale-110 transition-transform ${service.iconColor}`}>
                 {service.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2 truncate">{service.name}</h3>
-              <p className="text-sm text-gray-500 mb-6 line-clamp-2 md:h-10">{service.desc}</p>
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 mb-2 truncate">{service.name}</h3>
+              <p className="text-xs md:text-sm text-gray-500 mb-4 md:mb-6 line-clamp-2 md:h-10">{service.desc}</p>
               <p className={`font-bold ${service.iconColor} text-sm transition-all group-hover:translate-x-1`}>
                 {service.price}
               </p>

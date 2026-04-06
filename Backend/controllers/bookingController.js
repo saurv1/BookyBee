@@ -3,6 +3,7 @@ const authModel = require('../model/authModel');
 const notificationModel = require('../model/notificationModel');
 const reviewModel = require('../model/reviewModel');
 const complaintModel = require('../model/complaintModel');
+const mongoose = require('mongoose');
 
 const createBooking = async (req, res) => {
     try {

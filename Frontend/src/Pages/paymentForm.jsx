@@ -99,7 +99,7 @@ const PaymentForm = () => {
         <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-yellow-50/30">
             {/* Header */}
             <div className="bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-50">
-                <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-4">
+                <div className="max-w-4xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
                     <button
                         onClick={() => navigate(-1)}
                         className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -107,8 +107,8 @@ const PaymentForm = () => {
                         <ArrowLeft className="w-5 h-5 text-gray-600" />
                     </button>
                     <div>
-                        <h1 className="text-xl font-black text-gray-900">Complete Payment</h1>
-                        <p className="text-sm text-gray-500">Secure checkout for your booking</p>
+                        <h1 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Complete Payment</h1>
+                        <p className="text-xs md:text-sm text-gray-500 font-medium">Secure checkout for your booking</p>
                     </div>
                 </div>
             </div>
@@ -117,14 +117,14 @@ const PaymentForm = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     {/* Payment Methods */}
                     <div className="lg:col-span-3 space-y-6">
-                        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
-                            <div className="flex items-center gap-3 mb-6">
-                                <div className="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center">
-                                    <CreditCard className="w-5 h-5 text-[#FFB800]" />
+                        <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm">
+                            <div className="flex items-center gap-3 mb-6 md:mb-8">
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-yellow-50 flex items-center justify-center">
+                                    <CreditCard className="w-5 h-5 md:w-6 md:h-6 text-[#FFB800]" />
                                 </div>
-                                <div>
-                                    <h2 className="text-lg font-bold text-gray-900">Select Payment Method</h2>
-                                    <p className="text-sm text-gray-500">Choose your preferred payment gateway</p>
+                                <div className="flex-1">
+                                    <h2 className="text-lg md:text-xl font-bold text-gray-900">Select Payment Method</h2>
+                                    <p className="text-xs md:text-sm text-gray-500">Choose your preferred payment gateway</p>
                                 </div>
                             </div>
 
@@ -133,13 +133,13 @@ const PaymentForm = () => {
                                     <button
                                         key={gw.id}
                                         onClick={() => { setSelectedGateway(gw.id); setError(''); }}
-                                        className={`w-full flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-300 text-left group ${selectedGateway === gw.id
+                                        className={`w-full flex items-center gap-4 p-4 md:p-5 rounded-2xl border-2 transition-all duration-300 text-left group ${selectedGateway === gw.id
                                             ? 'border-[#FFB800] bg-yellow-50/50 shadow-lg shadow-yellow-100/50'
                                             : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50/50'
                                             }`}
                                     >
                                         <div
-                                            className={`w-14 h-14 rounded-2xl flex items-center justify-center text-white transition-transform duration-300 ${selectedGateway === gw.id ? 'scale-110' : 'group-hover:scale-105'
+                                            className={`w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl flex items-center justify-center text-white transition-transform duration-300 ${selectedGateway === gw.id ? 'scale-110' : 'group-hover:scale-105'
                                                 }`}
                                             style={{ backgroundColor: gw.color }}
                                         >
@@ -183,7 +183,7 @@ const PaymentForm = () => {
 
                     {/* Order Summary */}
                     <div className="lg:col-span-2">
-                        <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm sticky top-24">
+                        <div className="bg-white rounded-3xl p-6 md:p-8 border border-gray-100 shadow-sm sticky top-24">
                             <h2 className="text-lg font-bold text-gray-900 mb-6">Order Summary</h2>
 
                             <div className="space-y-4 mb-6">
