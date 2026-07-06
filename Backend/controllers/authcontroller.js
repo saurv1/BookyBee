@@ -106,9 +106,9 @@ const login = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        // Hardcoded Admin Login (Case-insensitive for the username 'admin')
-        if (email?.toLowerCase() === "admin" && password === "admin@123") {
-            const adminUser = await authModel.findOne({ email: "admin@bookybee.com" });
+        // Admin login using credentials from environment variables
+        if (email?.toLowerCase() === process.env.ADMIN_USERNAME?.toLowerCase() && password === process.env.ADMIN_PASSWORD) {
+            const adminUser = await authModel.findOne({ email: process.env.ADMIN_EMAIL });
             if (adminUser) {
                 const adminToken = jwt.sign({ id: adminUser._id, email: adminUser.email, role: "admin" }, process.env.JWT_SECRET, { expiresIn: "1h" });
                 return res.status(200).json({

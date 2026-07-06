@@ -62,7 +62,7 @@ const ComplaintPage = () => {
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 {error && (
                                     <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center space-x-3 text-red-600 animate-shake">
-                                        <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                                        <AlertCircle className="w-5 h-5 shrink-0" />
                                         <p className="font-bold text-sm">{error}</p>
                                     </div>
                                 )}

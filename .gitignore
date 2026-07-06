@@ -10,6 +10,9 @@ coverage/
 dist/
 build/
 
+# Uploads
+Backend/uploads/
+
 # Misc
 .DS_Store
 *.pem
